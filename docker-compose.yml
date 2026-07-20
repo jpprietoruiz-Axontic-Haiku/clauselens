@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: clauselens
+      POSTGRES_PASSWORD: clauselens
+      POSTGRES_DB: clauselens
+    ports:
+      - "5432:5432"
+    volumes:
+      - clauselens_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clauselens -d clauselens"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  clauselens_pg_data:

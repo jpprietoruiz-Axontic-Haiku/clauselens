@@ -1,0 +1,32 @@
+# Dependencias
+node_modules/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# Logs
+npm-debug.log*
+*.log
+
+# Editor / OS
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+
+# Coverage
+coverage/
+
+# Claude Code local state
+.claude/
+
+# Documento de planificación interno (no forma parte del portfolio público)
+/PROYECTO 1_ClauseLens.pdf

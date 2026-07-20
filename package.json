@@ -1,0 +1,25 @@
+{
+  "name": "clauselens",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @clauselens/db && npm run build -w @clauselens/ingest-worker && npm run build -w @clauselens/web",
+    "typecheck": "npm run build -w @clauselens/db && npm run typecheck -w @clauselens/ingest-worker && npm run typecheck -w @clauselens/web",
+    "lint": "npm run lint -w @clauselens/web && npm run lint -w @clauselens/ingest-worker && npm run lint -w @clauselens/db",
+    "test": "npm run build -w @clauselens/db && npm run test -w @clauselens/db && npm run test -w @clauselens/ingest-worker",
+    "dev:web": "npm run dev -w @clauselens/web",
+    "dev:worker": "npm run dev -w @clauselens/ingest-worker",
+    "db:generate": "npm run db:generate -w @clauselens/db",
+    "db:migrate": "npm run db:migrate -w @clauselens/db",
+    "db:studio": "npm run db:studio -w @clauselens/db",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  }
+}
