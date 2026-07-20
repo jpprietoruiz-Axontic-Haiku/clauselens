@@ -1,9 +1,12 @@
 import { z } from "zod";
 
+// DATABASE_URL se valida por separado en @clauselens/db (loadDbEnv):
+// ese paquete es el dueño de la configuración de base de datos.
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().positive().default(8787),
-  DATABASE_URL: z.string().min(1, "DATABASE_URL es obligatorio"),
+  OPENAI_API_KEY: z.string().min(1, "OPENAI_API_KEY es obligatorio (los embeddings solo los ofrece OpenAI)"),
+  EMBEDDING_MODEL: z.string().min(1).default("text-embedding-3-large"),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -19,6 +19,7 @@
     "db:generate": "npm run db:generate -w @clauselens/db",
     "db:migrate": "npm run db:migrate -w @clauselens/db",
     "db:studio": "npm run db:studio -w @clauselens/db",
+    "db:seed": "npm run seed -w @clauselens/ingest-worker",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down"
   }

@@ -18,6 +18,7 @@ export default defineConfig([
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-non-null-assertion": "error",
+      "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
     },
   },
 ]);

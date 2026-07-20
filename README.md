@@ -22,6 +22,7 @@ para las decisiones de arquitectura clave (pendiente, Hito 6).
 apps/
   web/             Next.js — frontend + route handlers (/api/chat, /api/documents, /eval)
   ingest-worker/   Hono — pipeline de ingesta (parse, chunking, embeddings, upsert)
+    corpus/        Corpus semilla: GDPR (HTML) y EU AI Act (PDF), extractos reales de EUR-Lex
 packages/
   db/              Schema Drizzle + cliente Postgres, compartido por web e ingest-worker
 docker-compose.yml Postgres + pgvector para desarrollo local
@@ -34,6 +35,7 @@ cp .env.example .env          # rellena ANTHROPIC_API_KEY / OPENAI_API_KEY
 npm install
 npm run docker:up             # levanta Postgres+pgvector en local
 npm run db:migrate
+npm run db:seed                # ingiere el corpus semilla (GDPR + EU AI Act)
 npm run dev:web                # http://localhost:3000
 ```
 
@@ -54,11 +56,12 @@ npm run dev:worker             # http://localhost:8787/healthz
 | `npm run db:generate` | genera una migración Drizzle a partir de `packages/db/src/schema.ts` |
 | `npm run db:migrate` | aplica las migraciones pendientes |
 | `npm run db:studio` | abre Drizzle Studio |
+| `npm run db:seed` | parsea, chunkea, embebe e inserta el corpus semilla (`apps/ingest-worker/corpus/`) |
 
 ## Roadmap por hitos
 
 - [x] **Hito 1** — Scaffolding del monorepo, schema Drizzle, docker-compose, CI.
-- [ ] **Hito 2** — Pipeline de ingesta (parse → chunking semántico → embeddings → pgvector).
+- [x] **Hito 2** — Pipeline de ingesta (parse → chunking semántico → embeddings → pgvector).
 - [ ] **Hito 3** — Retrieval híbrido + re-ranking, `POST /api/chat` con streaming y citas.
 - [ ] **Hito 4** — Frontend de chat con streaming y citas clicables.
 - [ ] **Hito 5** — Harness de eval (faithfulness, answer relevancy, context precision) + `/eval`.
@@ -66,7 +69,12 @@ npm run dev:worker             # http://localhost:8787/healthz
 
 ## Qué falta tras este hito
 
-- El worker de ingesta solo expone `GET /healthz` y un stub `POST /api/ingest` (501) —
-  el pipeline real llega en el Hito 2.
-- No hay corpus sembrado todavía ni endpoints de chat/retrieval.
-- `DATABASE_URL` apunta a Postgres local por defecto; Neon/Railway se configuran al desplegar.
+- El pipeline de ingesta (parse PDF/HTML → chunking semántico con solape → embeddings
+  OpenAI → upsert en pgvector) está completo y probado contra el corpus real, pero
+  **no se ha ejecutado de punta a punta contra Postgres** en esta máquina: no hay Docker
+  instalado aquí, así que `db:seed` no se ha corrido de verdad (queda para cuando levantes
+  el stack localmente o en CI/CD).
+- El endpoint `POST /api/ingest` existe y está probado a nivel HTTP, pero su camino de
+  persistencia en Postgres solo se verifica con un Postgres real (no con mocks) — pendiente
+  de correr en un entorno con Docker.
+- No hay endpoints de chat/retrieval todavía (Hito 3).
