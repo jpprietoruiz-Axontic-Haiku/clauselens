@@ -1,6 +1,6 @@
 import { chunks as chunksTable, documents, type Database } from "@clauselens/db";
 import { chunkSections, DEFAULT_CHUNK_OPTIONS } from "./chunk.js";
-import type { Embedder } from "./embed.js";
+import type { Embedder } from "@clauselens/core";
 import { parseHtml } from "./parse-html.js";
 import { parsePdf } from "./parse-pdf.js";
 import type { ParsedSection } from "./types.js";

@@ -10,10 +10,10 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w @clauselens/db && npm run build -w @clauselens/ingest-worker && npm run build -w @clauselens/web",
-    "typecheck": "npm run build -w @clauselens/db && npm run typecheck -w @clauselens/ingest-worker && npm run typecheck -w @clauselens/web",
-    "lint": "npm run lint -w @clauselens/web && npm run lint -w @clauselens/ingest-worker && npm run lint -w @clauselens/db",
-    "test": "npm run build -w @clauselens/db && npm run test -w @clauselens/db && npm run test -w @clauselens/ingest-worker",
+    "build": "npm run build -w @clauselens/db && npm run build -w @clauselens/core && npm run build -w @clauselens/ingest-worker && npm run build -w @clauselens/web",
+    "typecheck": "npm run build -w @clauselens/db && npm run typecheck -w @clauselens/db && npm run build -w @clauselens/core && npm run typecheck -w @clauselens/core && npm run typecheck -w @clauselens/ingest-worker && npm run typecheck -w @clauselens/web",
+    "lint": "npm run lint -w @clauselens/web && npm run lint -w @clauselens/ingest-worker && npm run lint -w @clauselens/db && npm run lint -w @clauselens/core",
+    "test": "npm run build -w @clauselens/db && npm run test -w @clauselens/db && npm run build -w @clauselens/core && npm run test -w @clauselens/core && npm run test -w @clauselens/ingest-worker",
     "dev:web": "npm run dev -w @clauselens/web",
     "dev:worker": "npm run dev -w @clauselens/ingest-worker",
     "db:generate": "npm run db:generate -w @clauselens/db",

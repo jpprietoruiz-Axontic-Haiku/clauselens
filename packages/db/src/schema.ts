@@ -44,6 +44,9 @@ export const chunks = pgTable(
   (table) => [
     index("chunks_document_id_idx").on(table.documentId),
     index("chunks_embedding_idx").using("hnsw", table.embedding.op("vector_cosine_ops")),
+    // Índice de expresión GIN para la pata léxica del retrieval híbrido
+    // (Hito 3): evita materializar una columna tsvector aparte.
+    index("chunks_content_fts_idx").using("gin", sql`to_tsvector('english', ${table.content})`),
   ],
 );
 

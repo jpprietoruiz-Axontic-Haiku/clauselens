@@ -2,7 +2,7 @@ import { serve } from "@hono/node-server";
 import { createDb, loadDbEnv } from "@clauselens/db";
 import { createApp } from "./app.js";
 import { loadEnv } from "./env.js";
-import { createOpenAiEmbedder } from "./ingest/embed.js";
+import { createOpenAiEmbedder } from "@clauselens/core";
 
 const env = loadEnv();
 const { DATABASE_URL } = loadDbEnv();

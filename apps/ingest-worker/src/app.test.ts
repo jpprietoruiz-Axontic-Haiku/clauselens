@@ -1,7 +1,7 @@
 import type { Database } from "@clauselens/db";
 import { describe, expect, it } from "vitest";
 import { createApp } from "./app.js";
-import type { Embedder } from "./ingest/embed.js";
+import type { Embedder } from "@clauselens/core";
 
 const fakeEmbedder: Embedder = {
   embed: (texts: string[]) => Promise.resolve(texts.map(() => [0, 0, 0])),

@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CHUNK_OPTIONS } from "./chunk.js";
-import type { Embedder } from "./embed.js";
+import type { Embedder } from "@clauselens/core";
 import { buildIngestion } from "./pipeline.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

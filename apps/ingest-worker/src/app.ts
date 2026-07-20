@@ -1,7 +1,7 @@
 import type { Database } from "@clauselens/db";
 import { Hono } from "hono";
 import { z } from "zod";
-import type { Embedder } from "./ingest/embed.js";
+import type { Embedder } from "@clauselens/core";
 import { ingestDocument } from "./ingest/pipeline.js";
 
 export interface AppDeps {

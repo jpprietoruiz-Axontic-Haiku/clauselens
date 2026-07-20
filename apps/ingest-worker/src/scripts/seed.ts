@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createDb, loadDbEnv } from "@clauselens/db";
 import { loadEnv } from "../env.js";
-import { createOpenAiEmbedder } from "../ingest/embed.js";
+import { createOpenAiEmbedder } from "@clauselens/core";
 import { ingestDocument, type ContentType } from "../ingest/pipeline.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

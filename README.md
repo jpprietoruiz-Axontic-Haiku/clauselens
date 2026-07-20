@@ -24,7 +24,9 @@ apps/
   ingest-worker/   Hono — pipeline de ingesta (parse, chunking, embeddings, upsert)
     corpus/        Corpus semilla: GDPR (HTML) y EU AI Act (PDF), extractos reales de EUR-Lex
 packages/
-  db/              Schema Drizzle + cliente Postgres, compartido por web e ingest-worker
+  db/              Schema Drizzle + cliente Postgres, compartido por el resto de paquetes
+  core/            Retrieval híbrido (vector + léxico, RRF), umbral de confianza, proveedor
+                   LLM intercambiable, construcción de prompt — compartido por web e ingest-worker
 docker-compose.yml Postgres + pgvector para desarrollo local
 ```
 
@@ -62,19 +64,44 @@ npm run dev:worker             # http://localhost:8787/healthz
 
 - [x] **Hito 1** — Scaffolding del monorepo, schema Drizzle, docker-compose, CI.
 - [x] **Hito 2** — Pipeline de ingesta (parse → chunking semántico → embeddings → pgvector).
-- [ ] **Hito 3** — Retrieval híbrido + re-ranking, `POST /api/chat` con streaming y citas.
+- [x] **Hito 3** — Retrieval híbrido + re-ranking, `POST /api/chat` con streaming y citas.
 - [ ] **Hito 4** — Frontend de chat con streaming y citas clicables.
 - [ ] **Hito 5** — Harness de eval (faithfulness, answer relevancy, context precision) + `/eval`.
 - [ ] **Hito 6** — README final, diagrama de arquitectura, `DECISIONS.md`.
 
+## Retrieval híbrido y umbral de confianza (Hito 3)
+
+`POST /api/chat` (`apps/web/src/app/api/chat/route.ts`): recibe `{ conversationId?, message }`,
+persiste el mensaje del usuario, embebe la pregunta y ejecuta retrieval híbrido antes de
+decidir si responde:
+
+1. **Vector search** — similitud coseno sobre `chunks.embedding` (índice HNSW).
+2. **Keyword search** — `websearch_to_tsquery` sobre un índice GIN de expresión
+   (`to_tsvector('english', content)`), sin necesidad de una columna `tsvector` aparte.
+3. **Fusión (re-ranking)** — Reciprocal Rank Fusion (RRF) de ambas listas; no se normalizan
+   los scores (coseno y `ts_rank` no son comparables), se fusiona por posición en el ranking.
+4. **Umbral de confianza** — si la similitud coseno del mejor resultado vectorial cae por
+   debajo de `CONFIDENCE_THRESHOLD` (`packages/core/src/retrieval/confidence.ts`), se responde
+   con un mensaje fijo de "no tengo base suficiente" **sin llamar al LLM**, en vez de alucinar.
+5. Si hay base suficiente, se arma el prompt con el contexto citado (`packages/core/src/chat/build-prompt.ts`)
+   y se transmite la respuesta en streaming (Vercel AI SDK, `createUIMessageStream`), junto con
+   un `data-citations` part con los chunks fuente (id, artículo, página) para que el Hito 4
+   pueda renderizar citas clicables.
+
+`GET /api/documents`: lista el corpus disponible.
+
+La justificación completa de estas decisiones (por qué RRF y no un re-ranker aparte, por qué
+0.35 de umbral, por qué estas métricas) se documenta en `DECISIONS.md` en el Hito 6.
+
 ## Qué falta tras este hito
 
-- El pipeline de ingesta (parse PDF/HTML → chunking semántico con solape → embeddings
-  OpenAI → upsert en pgvector) está completo y probado contra el corpus real, pero
-  **no se ha ejecutado de punta a punta contra Postgres** en esta máquina: no hay Docker
-  instalado aquí, así que `db:seed` no se ha corrido de verdad (queda para cuando levantes
-  el stack localmente o en CI/CD).
-- El endpoint `POST /api/ingest` existe y está probado a nivel HTTP, pero su camino de
-  persistencia en Postgres solo se verifica con un Postgres real (no con mocks) — pendiente
-  de correr en un entorno con Docker.
-- No hay endpoints de chat/retrieval todavía (Hito 3).
+- El retrieval híbrido tiene un test de integración contra Postgres real
+  (`packages/core/src/retrieval/hybrid.integration.test.ts`, sin mocks) que corre en CI, pero
+  **no se ha verificado en esta máquina**: hay un Postgres nativo (no Docker) ya escuchando en
+  el puerto 5432 con credenciales que no coinciden con `docker-compose.yml`, así que no pude
+  conectar. Antes de levantar `npm run docker:up` aquí, libera el puerto 5432 o cambia el
+  mapeo de puertos.
+- El pipeline de ingesta tampoco se ha corrido de punta a punta contra Postgres por el mismo
+  motivo (`db:seed`, `POST /api/ingest`): quedan pendientes de un entorno con Docker limpio.
+- No hay frontend todavía — `/api/chat` solo se ha probado con `curl`/tipado, no desde un
+  cliente real (Hito 4).
