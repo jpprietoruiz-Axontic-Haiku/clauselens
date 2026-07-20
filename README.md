@@ -65,7 +65,7 @@ npm run dev:worker             # http://localhost:8787/healthz
 - [x] **Hito 1** — Scaffolding del monorepo, schema Drizzle, docker-compose, CI.
 - [x] **Hito 2** — Pipeline de ingesta (parse → chunking semántico → embeddings → pgvector).
 - [x] **Hito 3** — Retrieval híbrido + re-ranking, `POST /api/chat` con streaming y citas.
-- [ ] **Hito 4** — Frontend de chat con streaming y citas clicables.
+- [x] **Hito 4** — Frontend de chat con streaming y citas clicables.
 - [ ] **Hito 5** — Harness de eval (faithfulness, answer relevancy, context precision) + `/eval`.
 - [ ] **Hito 6** — README final, diagrama de arquitectura, `DECISIONS.md`.
 
@@ -93,15 +93,42 @@ decidir si responde:
 La justificación completa de estas decisiones (por qué RRF y no un re-ranker aparte, por qué
 0.35 de umbral, por qué estas métricas) se documenta en `DECISIONS.md` en el Hito 6.
 
+## Frontend de chat (Hito 4)
+
+`apps/web/src/components/chat/chat.tsx` (`"use client"`), sobre `useChat` del AI SDK
+(`@ai-sdk/react`) con un `DefaultChatTransport` cuyo `prepareSendMessagesRequest` adapta el
+payload por defecto al contrato simple de `/api/chat` (`{ conversationId?, message }`).
+
+- **Estados de carga**: `status === "submitted"` → "Buscando en el corpus…";
+  `status === "streaming"` → "Redactando…" (el `data-citations` part llega antes de que
+  empiece el texto, así que para cuando el estado pasa a streaming las citas ya están listas).
+- **Citas clicables**: el prompt le pide al modelo citar con marcadores `[n]` inline. `AnswerText`
+  parte el texto acumulado por esos marcadores en cada render — funciona igual de bien a mitad
+  de streaming — y los convierte en botones que abren un diálogo (`CitationDialog`) con el
+  fragmento fuente completo (documento, artículo, página, contenido, enlace a EUR-Lex).
+- **Tipado de punta a punta**: `ClauseLensUIMessage` (`apps/web/src/lib/chat-types.ts`)
+  parametriza tanto `createUIMessageStream` (servidor) como `useChat` (cliente), así que los
+  `data-conversation`/`data-citations` parts están tipados sin *casts* a ambos lados.
+- El endpoint ahora envuelve la preparación (crear conversación, guardar el mensaje, embeber,
+  recuperar) en un `try/catch` que devuelve JSON con status explícito — un 500 HTML sin
+  manejar dejaba al cliente colgado en "Buscando en el corpus…" para siempre, según se
+  comprobó en el navegador.
+
 ## Qué falta tras este hito
 
+- **Bug real encontrado y corregido en este hito**: `apps/web` no cargaba el `.env` de la raíz
+  del monorepo (Next.js solo autocarga `.env` desde la raíz de la propia app). `next dev` nunca
+  veía `DATABASE_URL` ni las claves de API. Se corrigió cargando `../../.env` con `dotenv` desde
+  `next.config.ts`, igual que ya hacían `drizzle.config.ts` y `packages/core/vitest.config.ts`.
+  Verificado en el navegador con Playwright (`webapp-testing`): antes del fix, el error era
+  "DATABASE_URL inválido"; después, el error pasa a ser el fallo real de autenticación de
+  Postgres de esta máquina — confirmando que la carga de env ya funciona.
+- El camino feliz (respuesta real del LLM con citas) **no se ha podido probar de punta a
+  punta**: hay un Postgres nativo (no Docker) ya escuchando en el puerto 5432 con credenciales
+  que no coinciden con `docker-compose.yml`, y no hay claves de Anthropic/OpenAI configuradas
+  en esta máquina. Lo que sí se verificó en el navegador: render de la página, envío de
+  mensajes, la transición a "Buscando en el corpus…", y que un error de servidor ahora se
+  muestra correctamente en vez de dejar la UI colgada.
 - El retrieval híbrido tiene un test de integración contra Postgres real
   (`packages/core/src/retrieval/hybrid.integration.test.ts`, sin mocks) que corre en CI, pero
-  **no se ha verificado en esta máquina**: hay un Postgres nativo (no Docker) ya escuchando en
-  el puerto 5432 con credenciales que no coinciden con `docker-compose.yml`, así que no pude
-  conectar. Antes de levantar `npm run docker:up` aquí, libera el puerto 5432 o cambia el
-  mapeo de puertos.
-- El pipeline de ingesta tampoco se ha corrido de punta a punta contra Postgres por el mismo
-  motivo (`db:seed`, `POST /api/ingest`): quedan pendientes de un entorno con Docker limpio.
-- No hay frontend todavía — `/api/chat` solo se ha probado con `curl`/tipado, no desde un
-  cliente real (Hito 4).
+  tampoco se ha verificado aquí por el mismo motivo de credenciales.
