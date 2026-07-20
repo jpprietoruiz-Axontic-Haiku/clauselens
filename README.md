@@ -59,6 +59,7 @@ npm run dev:worker             # http://localhost:8787/healthz
 | `npm run db:migrate` | aplica las migraciones pendientes |
 | `npm run db:studio` | abre Drizzle Studio |
 | `npm run db:seed` | parsea, chunkea, embebe e inserta el corpus semilla (`apps/ingest-worker/corpus/`) |
+| `npm run eval` | corre el golden set completo, guarda scores en `eval_runs`/`eval_results` |
 
 ## Roadmap por hitos
 
@@ -66,7 +67,7 @@ npm run dev:worker             # http://localhost:8787/healthz
 - [x] **Hito 2** — Pipeline de ingesta (parse → chunking semántico → embeddings → pgvector).
 - [x] **Hito 3** — Retrieval híbrido + re-ranking, `POST /api/chat` con streaming y citas.
 - [x] **Hito 4** — Frontend de chat con streaming y citas clicables.
-- [ ] **Hito 5** — Harness de eval (faithfulness, answer relevancy, context precision) + `/eval`.
+- [x] **Hito 5** — Harness de eval (faithfulness, answer relevancy, context precision) + `/eval`.
 - [ ] **Hito 6** — README final, diagrama de arquitectura, `DECISIONS.md`.
 
 ## Retrieval híbrido y umbral de confianza (Hito 3)
@@ -114,8 +115,34 @@ payload por defecto al contrato simple de `/api/chat` (`{ conversationId?, messa
   manejar dejaba al cliente colgado en "Buscando en el corpus…" para siempre, según se
   comprobó en el navegador.
 
+## Harness de eval (Hito 5)
+
+Golden set de 10 preguntas (`packages/core/src/eval/golden-set.json`, 8 sobre el corpus real —
+GDPR y EU AI Act — y 2 deliberadamente fuera de corpus) con la respuesta ideal y los artículos
+que se espera recuperar. `npm run eval` (`apps/ingest-worker/src/scripts/eval.ts`) corre cada
+pregunta contra el mismo pipeline que `/api/chat` (retrieval híbrido → umbral de confianza →
+generación) y calcula tres métricas por pregunta:
+
+- **Faithfulness** (LLM-as-judge) — ¿toda afirmación de la respuesta está respaldada por el
+  contexto recuperado, sin inventar nada?
+- **Answer relevancy** (LLM-as-judge) — ¿la respuesta aborda directamente lo que se preguntó?
+  (una respuesta honesta de "no tengo base suficiente" ante una pregunta fuera de corpus puntúa 1).
+- **Context precision** (heurística, sin LLM) — de los chunks recuperados, ¿qué fracción
+  pertenece a los artículos que el golden set espera? Sirve también como señal barata y
+  determinista para las 2 preguntas fuera de corpus (`packages/core/src/eval/context-precision.ts`).
+
+Los resultados se guardan en `eval_runs`/`eval_results` (schema del Hito 1) junto al SHA de git
+y al coste estimado en USD. El dashboard `GET /eval` (`apps/web/src/app/eval/page.tsx`) lista
+las últimas ejecuciones con flechas de regresión (↑/↓) comparando cada run contra la anterior.
+
 ## Qué falta tras este hito
 
+- El harness de eval **no se ha corrido de verdad en esta máquina**: necesita Postgres real y
+  claves de Anthropic/OpenAI, ninguna disponible aquí (mismo motivo que los hitos anteriores).
+  Se verificó que `/eval` degrada con un mensaje explícito en vez de crashear cuando la consulta
+  a Postgres falla (mismo patrón de manejo de errores que `/api/chat` en el Hito 4).
+- El juez LLM usa el mismo modelo que genera las respuestas (por simplicidad y coste); nada
+  impide apuntar el juez a un proveedor distinto para evitar el sesgo de "se juzga a sí mismo".
 - **Bug real encontrado y corregido en este hito**: `apps/web` no cargaba el `.env` de la raíz
   del monorepo (Next.js solo autocarga `.env` desde la raíz de la propia app). `next dev` nunca
   veía `DATABASE_URL` ni las claves de API. Se corrigió cargando `../../.env` con `dotenv` desde

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "gdpr-principles",
+    "question": "¿Cuáles son los principios que deben regir el tratamiento de datos personales según el GDPR?",
+    "idealAnswer": "El artículo 5 del GDPR establece que los datos personales deben tratarse de forma lícita, leal y transparente; recogerse con fines determinados, explícitos y legítimos (limitación de la finalidad); ser adecuados, pertinentes y limitados a lo necesario (minimización de datos); exactos y actualizados; conservados solo durante el tiempo necesario (limitación del plazo de conservación); y tratados de forma que se garantice su seguridad (integridad y confidencialidad). El responsable del tratamiento debe poder demostrar el cumplimiento de estos principios (responsabilidad proactiva).",
+    "expectedArticleRefs": ["Article 5"]
+  },
+  {
+    "id": "gdpr-lawful-basis",
+    "question": "¿Cuáles son las bases legales que permiten el tratamiento lícito de datos personales?",
+    "idealAnswer": "Según el artículo 6 del GDPR, el tratamiento es lícito si se cumple al menos una de estas condiciones: el interesado dio su consentimiento; el tratamiento es necesario para la ejecución de un contrato; es necesario para cumplir una obligación legal; es necesario para proteger intereses vitales del interesado; es necesario para el cumplimiento de una misión de interés público; o es necesario para la satisfacción de intereses legítimos perseguidos por el responsable del tratamiento.",
+    "expectedArticleRefs": ["Article 6"]
+  },
+  {
+    "id": "gdpr-right-to-erasure",
+    "question": "¿Qué es el derecho al olvido y cuándo se puede ejercer?",
+    "idealAnswer": "El artículo 17 del GDPR reconoce el derecho de supresión (\"derecho al olvido\"): el interesado tiene derecho a que se supriman sin dilación indebida sus datos personales cuando, entre otros casos, los datos ya no sean necesarios para los fines que motivaron su recogida, el interesado retire el consentimiento en que se basaba el tratamiento, o el tratamiento haya sido ilícito.",
+    "expectedArticleRefs": ["Article 17"]
+  },
+  {
+    "id": "gdpr-personal-data-definition",
+    "question": "¿Qué se entiende por \"datos personales\" según el GDPR?",
+    "idealAnswer": "El artículo 4 del GDPR define los datos personales como toda información sobre una persona física identificada o identificable; se considera identificable a la persona que pueda ser identificada, directa o indirectamente, en particular mediante un identificador como un nombre, un número de identificación, datos de localización, un identificador en línea o uno o varios elementos propios de su identidad física, fisiológica, genética, psíquica, económica, cultural o social.",
+    "expectedArticleRefs": ["Article 4"]
+  },
+  {
+    "id": "gdpr-breach-notification",
+    "question": "¿En qué plazo debe notificarse una violación de seguridad de datos personales a la autoridad de control?",
+    "idealAnswer": "Según el artículo 33 del GDPR, en caso de violación de la seguridad de los datos personales, el responsable del tratamiento debe notificarla a la autoridad de control competente sin dilación indebida y, de ser posible, a más tardar 72 horas después de haber tenido constancia de ella, salvo que sea improbable que dicha violación constituya un riesgo para los derechos y libertades de las personas físicas.",
+    "expectedArticleRefs": ["Article 33"]
+  },
+  {
+    "id": "ai-act-prohibited-practices",
+    "question": "¿Qué prácticas de inteligencia artificial están prohibidas según el Reglamento de IA de la UE?",
+    "idealAnswer": "El artículo 5 del EU AI Act prohíbe, entre otras prácticas, la introducción en el mercado o el uso de sistemas de IA que empleen técnicas subliminales que trasciendan la consciencia de una persona, o técnicas deliberadamente manipuladoras o engañosas, con el objetivo o el efecto de distorsionar materialmente el comportamiento de una persona o grupo de personas, mermando apreciablemente su capacidad para tomar una decisión informada, de un modo que les cause o sea razonablemente probable que les cause perjuicios considerables.",
+    "expectedArticleRefs": ["Article 5"]
+  },
+  {
+    "id": "ai-act-high-risk",
+    "question": "¿Cuándo se considera que un sistema de IA es de alto riesgo según el Reglamento de IA de la UE?",
+    "idealAnswer": "Según el artículo 6 del EU AI Act, un sistema de IA se considera de alto riesgo cuando está destinado a utilizarse como componente de seguridad de un producto (o es en sí mismo un producto) cubierto por la legislación de armonización de la Unión enumerada en el anexo I, y cuando ese producto (o su componente de seguridad basado en IA) debe someterse a una evaluación de conformidad por terceros con vistas a la introducción en el mercado o la puesta en servicio de dicho producto.",
+    "expectedArticleRefs": ["Article 6"]
+  },
+  {
+    "id": "ai-act-system-definition",
+    "question": "¿Qué es un \"sistema de IA\" según la definición del Reglamento de IA de la UE?",
+    "idealAnswer": "El artículo 3 del EU AI Act define un sistema de IA como un sistema basado en una máquina que está diseñado para funcionar con distintos niveles de autonomía y que puede mostrar capacidad de adaptación tras el despliegue, y que, para objetivos explícitos o implícitos, infiere de la información de entrada que recibe la manera de generar resultados de salida, como predicciones, contenidos, recomendaciones o decisiones que pueden influir en entornos físicos o virtuales.",
+    "expectedArticleRefs": ["Article 3"]
+  },
+  {
+    "id": "out-of-corpus-capital",
+    "question": "¿Cuál es la capital de Australia?",
+    "idealAnswer": "El corpus de ClauseLens (GDPR y EU AI Act) no contiene información geográfica ni sobre capitales de países, así que el sistema debe responder que no tiene base suficiente en vez de inventar una respuesta.",
+    "expectedArticleRefs": []
+  },
+  {
+    "id": "out-of-corpus-cookies",
+    "question": "¿Qué dice el Reglamento sobre el uso de cookies de terceros en sitios web?",
+    "idealAnswer": "El uso de cookies se regula principalmente por la Directiva ePrivacy, no por el GDPR ni por el EU AI Act, que son el corpus ingerido. El sistema debe indicar que no tiene base suficiente en el corpus para responder con confianza, en vez de mezclar normativa no incluida.",
+    "expectedArticleRefs": []
+  }
+]

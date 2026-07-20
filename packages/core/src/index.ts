@@ -1,6 +1,12 @@
 export { buildChatMessages, buildContextBlock, NO_BASIS_MESSAGE, type ChatMessage } from "./chat/build-prompt.js";
 export { EMBEDDING_DIMENSIONS, createOpenAiEmbedder, embedOne, type Embedder } from "./embed.js";
 export { loadCoreEnv, type CoreEnv } from "./env.js";
+export { contextPrecision } from "./eval/context-precision.js";
+export { estimateCostUsd, type TokenUsage } from "./eval/cost.js";
+export { loadGoldenSet } from "./eval/golden-set.js";
+export { judgeAnswerRelevancy, judgeFaithfulness, type JudgeScore } from "./eval/llm-judge.js";
+export { evaluateGoldenSet, evaluateQuestion, type RunEvalDeps } from "./eval/run-eval.js";
+export type { EvalResult, GoldenQuestion } from "./eval/types.js";
 export { getChatModel } from "./llm/provider.js";
 export { CONFIDENCE_THRESHOLD, hasSufficientBasis } from "./retrieval/confidence.js";
 export { fuseRankings, hybridSearch, type HybridSearchOptions } from "./retrieval/hybrid.js";
