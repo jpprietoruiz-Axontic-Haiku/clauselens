@@ -1,8 +1,9 @@
 import { FlatCompat } from "@eslint/eslintrc";
 
-// eslint-config-next 15.x todavía exporta configuración en formato legacy
-// (eslintrc), no flat config nativo (eso llega en Next.js 16). FlatCompat es
-// el puente oficial documentado por Next.js para usarla desde eslint.config.mjs.
+// eslint-config-next 15.x still exports configuration in the legacy
+// (eslintrc) format, not native flat config (that arrives in Next.js 16).
+// FlatCompat is the official bridge documented by Next.js to use it from
+// eslint.config.mjs.
 const compat = new FlatCompat({
   baseDirectory: import.meta.dirname,
 });

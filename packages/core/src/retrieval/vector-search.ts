@@ -9,7 +9,7 @@ export interface VectorHit {
   articleRef: string | null;
   page: number | null;
   content: string;
-  /** 1 - distancia coseno: 1 es idéntico, valores bajos/negativos son poco relacionados. */
+  /** 1 - cosine distance: 1 is identical, low/negative values are poorly related. */
   similarity: number;
 }
 

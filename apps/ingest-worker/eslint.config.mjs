@@ -18,8 +18,8 @@ export default defineConfig([
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-non-null-assertion": "error",
-      // Los números siempre interpolan de forma predecible; no es el riesgo
-      // que la regla busca (objetos/any en plantillas).
+      // Numbers always interpolate predictably; that's not the risk the
+      // rule is looking for (objects/any in templates).
       "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
     },
   },

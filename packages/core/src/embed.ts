@@ -1,9 +1,9 @@
 import OpenAI from "openai";
 
-// Debe coincidir con chunks.embedding (vector(3072)) en packages/db/src/schema.ts.
+// Must match chunks.embedding (vector(3072)) in packages/db/src/schema.ts.
 export const EMBEDDING_DIMENSIONS = 3072;
 
-// Límite conservador de inputs por request (el límite real de la API es 2048).
+// Conservative limit on inputs per request (the real API limit is 2048).
 const BATCH_SIZE = 96;
 
 export interface Embedder {
@@ -24,9 +24,9 @@ export function createOpenAiEmbedder(apiKey: string, model: string): Embedder {
         for (const item of response.data) {
           if (item.embedding.length !== EMBEDDING_DIMENSIONS) {
             throw new Error(
-              `El modelo de embeddings "${model}" devolvió ${item.embedding.length} dimensiones, ` +
-                `se esperaban ${EMBEDDING_DIMENSIONS}. Si cambiaste EMBEDDING_MODEL hay que migrar ` +
-                "la columna chunks.embedding.",
+              `The embedding model "${model}" returned ${item.embedding.length} dimensions, ` +
+                `expected ${EMBEDDING_DIMENSIONS}. If you changed EMBEDDING_MODEL you need to migrate ` +
+                "the chunks.embedding column.",
             );
           }
           results.push(item.embedding);
@@ -38,11 +38,11 @@ export function createOpenAiEmbedder(apiKey: string, model: string): Embedder {
   };
 }
 
-/** Embebe un único texto (p. ej. la pregunta del usuario en /api/chat). */
+/** Embeds a single piece of text (e.g. the user's question in /api/chat). */
 export async function embedOne(embedder: Embedder, text: string): Promise<number[]> {
   const [embedding] = await embedder.embed([text]);
   if (!embedding) {
-    throw new Error("El embedder no devolvió ningún vector.");
+    throw new Error("The embedder did not return any vector.");
   }
   return embedding;
 }

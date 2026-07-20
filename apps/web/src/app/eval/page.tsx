@@ -1,8 +1,8 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { listEvalRunSummaries, type EvalRunSummary } from "@/lib/eval-queries";
 
-// El dashboard consulta Postgres en cada visita: no tiene sentido
-// prerenderizarlo en build time (ni sería posible sin DB disponible ahí).
+// The dashboard queries Postgres on every visit: no point prerendering it
+// at build time (and it wouldn't be possible without a DB available there).
 export const dynamic = "force-dynamic";
 
 function formatPct(value: number): string {
@@ -24,48 +24,48 @@ function TrendIndicator({ current, previous }: { current: number; previous: numb
 }
 
 export default async function EvalPage() {
-  // Igual que /api/chat (Hito 4): un fallo de DB no debe tumbar la página con
-  // la página de error genérica de Next — se muestra un estado explícito.
+  // Same as /api/chat: a DB failure shouldn't take down the page with
+  // Next's generic error page — an explicit state is shown instead.
   let runs: EvalRunSummary[];
   let loadError: string | null = null;
   try {
     runs = await listEvalRunSummaries();
   } catch (error) {
     runs = [];
-    loadError = error instanceof Error ? error.message : "Error desconocido cargando las ejecuciones de eval.";
+    loadError = error instanceof Error ? error.message : "Unknown error loading eval runs.";
   }
 
   return (
     <div className="mx-auto max-w-5xl p-6">
-      <h1 className="text-2xl font-semibold">Panel de evaluación</h1>
+      <h1 className="text-2xl font-semibold">Evaluation dashboard</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Cada ejecución corre el golden set completo contra el pipeline de retrieval + generación y
-        mide faithfulness, answer relevancy (LLM-as-judge) y context precision (heurística) —
-        ver{" "}
+        Each run executes the full golden set against the retrieval + generation pipeline and
+        measures faithfulness, answer relevancy (LLM-as-judge) and context precision (heuristic) —
+        see{" "}
         <code className="rounded bg-muted px-1 py-0.5">
           packages/core/src/eval/
         </code>
-        . Comparado contra la ejecución inmediatamente anterior.
+        . Compared against the immediately preceding run.
       </p>
 
       {loadError ? (
-        <p className="mt-8 text-sm text-destructive">No se pudieron cargar las ejecuciones de eval: {loadError}</p>
+        <p className="mt-8 text-sm text-destructive">Could not load eval runs: {loadError}</p>
       ) : runs.length === 0 ? (
         <p className="mt-8 text-sm text-muted-foreground">
-          Todavía no hay ejecuciones de eval. Corre <code className="rounded bg-muted px-1 py-0.5">npm run eval</code>{" "}
-          para generar la primera.
+          No eval runs yet. Run <code className="rounded bg-muted px-1 py-0.5">npm run eval</code>{" "}
+          to generate the first one.
         </p>
       ) : (
         <Table className="mt-6">
           <TableHeader>
             <TableRow>
               <TableHead>Run</TableHead>
-              <TableHead>Preguntas</TableHead>
+              <TableHead>Questions</TableHead>
               <TableHead>Faithfulness</TableHead>
               <TableHead>Answer relevancy</TableHead>
               <TableHead>Context precision</TableHead>
-              <TableHead>Latencia media</TableHead>
-              <TableHead>Coste total</TableHead>
+              <TableHead>Avg latency</TableHead>
+              <TableHead>Total cost</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -75,7 +75,7 @@ export default async function EvalPage() {
                 <TableRow key={run.id}>
                   <TableCell>
                     <div className="font-mono text-xs">{run.gitSha.slice(0, 7)}</div>
-                    <div className="text-xs text-muted-foreground">{run.createdAt.toLocaleString("es-ES")}</div>
+                    <div className="text-xs text-muted-foreground">{run.createdAt.toLocaleString("en-US")}</div>
                   </TableCell>
                   <TableCell>{run.questionCount}</TableCell>
                   <TableCell>

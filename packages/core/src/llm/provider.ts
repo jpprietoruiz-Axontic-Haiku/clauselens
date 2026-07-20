@@ -7,11 +7,11 @@ type ProviderEnv = Pick<CoreEnv, "LLM_PROVIDER" | "ANTHROPIC_API_KEY" | "ANTHROP
   OPENAI_API_KEY: string;
 };
 
-/** Capa de proveedor intercambiable: Anthropic u OpenAI según LLM_PROVIDER. */
+/** Swappable provider layer: Anthropic or OpenAI depending on LLM_PROVIDER. */
 export function getChatModel(env: ProviderEnv): LanguageModel {
   if (env.LLM_PROVIDER === "anthropic") {
     if (!env.ANTHROPIC_API_KEY) {
-      throw new Error("ANTHROPIC_API_KEY es obligatorio cuando LLM_PROVIDER=anthropic");
+      throw new Error("ANTHROPIC_API_KEY is required when LLM_PROVIDER=anthropic");
     }
     const anthropic = createAnthropic({ apiKey: env.ANTHROPIC_API_KEY });
     return anthropic(env.ANTHROPIC_MODEL);

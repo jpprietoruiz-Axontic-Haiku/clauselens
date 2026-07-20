@@ -3,9 +3,9 @@ import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { hybridSearch } from "./hybrid.js";
 
-// Test de integración contra un Postgres real (pgvector + búsqueda de texto
-// completo): nada de esto se puede mockear de forma fiel, así que requiere
-// DATABASE_URL apuntando a una base migrada (ver docker-compose.yml / CI).
+// Integration test against a real Postgres (pgvector + full-text search):
+// none of this can be faithfully mocked, so it requires DATABASE_URL
+// pointing at a migrated database (see docker-compose.yml / CI).
 
 const EMBEDDING_DIMENSIONS = 3072;
 
@@ -17,17 +17,16 @@ function makeVector(activeStart: number, activeCount: number): number[] {
   return vector;
 }
 
-// Vector de la "pregunta": coincide exactamente con el chunk que debería
-// ganar en ambas patas.
+// "Question" vector: matches exactly the chunk that should win on both legs.
 const QUERY_VECTOR = makeVector(0, 100);
-// Solapa mucho con QUERY_VECTOR (alta similitud coseno) pero su texto no
-// comparte palabras clave con la pregunta: debería aparecer solo vía vector.
+// Overlaps heavily with QUERY_VECTOR (high cosine similarity) but its text
+// doesn't share keywords with the question: should only appear via vector.
 const VECTOR_ONLY_EMBEDDING = makeVector(0, 90);
-// Ortogonal a QUERY_VECTOR (similitud coseno ~0) pero su texto sí comparte
-// palabras clave: debería aparecer solo vía la pata léxica.
+// Orthogonal to QUERY_VECTOR (cosine similarity ~0) but its text does share
+// keywords: should only appear via the lexical leg.
 const KEYWORD_ONLY_EMBEDDING = makeVector(2900, 100);
 
-describe("hybridSearch (integración, Postgres real)", () => {
+describe("hybridSearch (integration, real Postgres)", () => {
   let db: Database;
   let documentId: string;
 
@@ -38,20 +37,20 @@ describe("hybridSearch (integración, Postgres real)", () => {
     const [document] = await db
       .insert(documents)
       .values({
-        title: "Corpus de prueba — hybridSearch",
+        title: "Test corpus — hybridSearch",
         sourceUrl: "https://example.org/test-corpus",
         jurisdiction: "TEST",
         version: "1.0",
       })
       .returning({ id: documents.id });
-    if (!document) throw new Error("No se pudo crear el documento de prueba.");
+    if (!document) throw new Error("Could not create the test document.");
     documentId = document.id;
 
     await db.insert(chunks).values([
       {
         documentId,
         content: "The processing of personal data shall be lawful, fair and transparent.",
-        articleRef: "Article 5 (ambas patas)",
+        articleRef: "Article 5 (both legs)",
         page: null,
         embedding: QUERY_VECTOR,
         tokenCount: 12,
@@ -59,7 +58,7 @@ describe("hybridSearch (integración, Postgres real)", () => {
       {
         documentId,
         content: "Unrelated filler text about weather patterns in coastal regions.",
-        articleRef: "Article 99 (solo vector)",
+        articleRef: "Article 99 (vector only)",
         page: null,
         embedding: VECTOR_ONLY_EMBEDDING,
         tokenCount: 10,
@@ -67,7 +66,7 @@ describe("hybridSearch (integración, Postgres real)", () => {
       {
         documentId,
         content: "Lawful processing of personal data requires a valid legal basis.",
-        articleRef: "Article 6 (solo léxico)",
+        articleRef: "Article 6 (keyword only)",
         page: null,
         embedding: KEYWORD_ONLY_EMBEDDING,
         tokenCount: 10,
@@ -81,33 +80,33 @@ describe("hybridSearch (integración, Postgres real)", () => {
     }
   });
 
-  it("el chunk que coincide en ambas patas queda primero", async () => {
+  it("the chunk that matches on both legs comes first", async () => {
     const results = await hybridSearch(db, QUERY_VECTOR, "personal data lawful", { topK: 5 });
 
     expect(results.length).toBeGreaterThan(0);
-    expect(results[0]?.articleRef).toBe("Article 5 (ambas patas)");
+    expect(results[0]?.articleRef).toBe("Article 5 (both legs)");
     expect(results[0]?.vectorScore).not.toBeNull();
     expect(results[0]?.keywordScore).not.toBeNull();
   });
 
-  it("recupera un chunk que solo es fuerte en la pata vectorial", async () => {
+  it("retrieves a chunk that is only strong on the vector leg", async () => {
     const results = await hybridSearch(db, QUERY_VECTOR, "personal data lawful", { topK: 5 });
-    const vectorOnly = results.find((r) => r.articleRef === "Article 99 (solo vector)");
+    const vectorOnly = results.find((r) => r.articleRef === "Article 99 (vector only)");
 
     expect(vectorOnly).toBeDefined();
     expect(vectorOnly?.vectorScore).not.toBeNull();
     expect(vectorOnly?.keywordScore).toBeNull();
   });
 
-  it("recupera un chunk que solo es fuerte en la pata léxica", async () => {
+  it("retrieves a chunk that is only strong on the lexical leg", async () => {
     const results = await hybridSearch(db, QUERY_VECTOR, "personal data lawful", { topK: 5 });
-    const keywordOnly = results.find((r) => r.articleRef === "Article 6 (solo léxico)");
+    const keywordOnly = results.find((r) => r.articleRef === "Article 6 (keyword only)");
 
     expect(keywordOnly).toBeDefined();
     expect(keywordOnly?.keywordScore).not.toBeNull();
   });
 
-  it("respeta topK", async () => {
+  it("respects topK", async () => {
     const results = await hybridSearch(db, QUERY_VECTOR, "personal data lawful", { topK: 1 });
     expect(results).toHaveLength(1);
   });

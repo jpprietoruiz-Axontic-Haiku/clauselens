@@ -19,9 +19,10 @@ const MAX_RUNS = 20;
 export async function listEvalRunSummaries(): Promise<EvalRunSummary[]> {
   const db = getDb();
 
-  // avg() sobre columnas `real` ya vuelve como number nativo; count()/sum()
-  // sobre numeric/bigint los devuelve como string en node-postgres, así que
-  // se castean explícitamente para no propagar strings a la UI.
+  // avg() over `real` columns already comes back as a native number;
+  // count()/sum() over numeric/bigint return them as strings in
+  // node-postgres, so they're explicitly cast to avoid leaking strings
+  // into the UI.
   const rows = await db
     .select({
       id: evalRuns.id,

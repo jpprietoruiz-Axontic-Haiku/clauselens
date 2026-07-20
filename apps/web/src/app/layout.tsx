@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "ClauseLens",
-  description: "Asistente RAG de consulta normativa con citas ancladas a la fuente exacta.",
+  description: "Regulatory RAG assistant with citations anchored to the exact source.",
 };
 
 export default function RootLayout({

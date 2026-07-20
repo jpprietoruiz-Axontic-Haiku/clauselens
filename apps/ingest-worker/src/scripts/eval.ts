@@ -32,9 +32,10 @@ async function main(): Promise<void> {
     embedder: createOpenAiEmbedder(coreEnv.OPENAI_API_KEY, coreEnv.EMBEDDING_MODEL),
     chatModel: getChatModel(coreEnv),
     chatModelId: coreEnv.LLM_PROVIDER === "anthropic" ? coreEnv.ANTHROPIC_MODEL : coreEnv.OPENAI_MODEL,
-    // Se usa el mismo modelo de chat como juez: mantiene el harness simple y
-    // barato para un portfolio; nada impide apuntar el juez a otro proveedor
-    // más adelante si se quiere evitar el sesgo de "el modelo se juzga a sí mismo".
+    // The same chat model is used as the judge: keeps the harness simple
+    // and cheap for a portfolio project; nothing prevents pointing the
+    // judge at a different provider later to avoid the "the model judges
+    // itself" bias.
     judgeModel: getChatModel(coreEnv),
   };
 
@@ -45,7 +46,7 @@ async function main(): Promise<void> {
 
   const [run] = await db.insert(evalRuns).values({ gitSha: currentGitSha() }).returning({ id: evalRuns.id });
   if (!run) {
-    throw new Error("No se pudo crear el registro de eval_runs.");
+    throw new Error("Could not create the eval_runs record.");
   }
 
   await db.insert(evalResults).values(

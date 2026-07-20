@@ -9,13 +9,13 @@ export interface KeywordHit {
   articleRef: string | null;
   page: number | null;
   content: string;
-  /** ts_rank de Postgres: mayor es más relevante, sin cota superior fija. */
+  /** Postgres ts_rank: higher is more relevant, no fixed upper bound. */
   rank: number;
 }
 
-// Reutiliza el índice GIN de expresión definido en chunks_content_fts_idx
-// (packages/db/src/schema.ts). websearch_to_tsquery tolera entrada libre de
-// usuario sin lanzar error de sintaxis, a diferencia de to_tsquery.
+// Reuses the GIN expression index defined on chunks_content_fts_idx
+// (packages/db/src/schema.ts). websearch_to_tsquery tolerates free-form user
+// input without throwing a syntax error, unlike to_tsquery.
 export async function keywordSearch(db: Database, queryText: string, limit: number): Promise<KeywordHit[]> {
   const tsQuery = sql`websearch_to_tsquery('english', ${queryText})`;
   const rank = sql<number>`ts_rank(to_tsvector('english', ${chunks.content}), ${tsQuery})`;

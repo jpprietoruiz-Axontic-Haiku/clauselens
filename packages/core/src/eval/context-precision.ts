@@ -9,12 +9,11 @@ function extractArticleNumber(ref: string | null): string | null {
 }
 
 /**
- * Heurística (no LLM-as-judge): fracción de los chunks recuperados cuyo
- * número de artículo está entre los esperados por el golden set. Para
- * preguntas fuera de corpus (expectedArticleRefs = []), cualquier chunk
- * recuperado cuenta como "no esperado", así que el score tiende a 0 —
- * exactamente la señal que interesa cuando la pregunta no debería
- * encontrar soporte real en el corpus.
+ * Heuristic (not LLM-as-judge): fraction of retrieved chunks whose article
+ * number is among those expected by the golden set. For out-of-corpus
+ * questions (expectedArticleRefs = []), any retrieved chunk counts as
+ * "not expected", so the score tends to 0 — exactly the signal we want
+ * when the question shouldn't find real support in the corpus.
  */
 export function contextPrecision(retrieved: RetrievedChunk[], expectedArticleRefs: string[]): number {
   if (retrieved.length === 0) return 0;

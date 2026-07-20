@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { chunks, conversations, documents, evalResults, evalRuns, messages } from "./schema.js";
 
 describe("schema", () => {
-  it("nombra las tablas según el blueprint", () => {
+  it("names tables according to the blueprint", () => {
     expect(getTableName(documents)).toBe("documents");
     expect(getTableName(chunks)).toBe("chunks");
     expect(getTableName(conversations)).toBe("conversations");
@@ -13,21 +13,21 @@ describe("schema", () => {
     expect(getTableName(evalResults)).toBe("eval_results");
   });
 
-  it("chunks expone las columnas esenciales del blueprint", () => {
+  it("chunks exposes the essential blueprint columns", () => {
     const columns = getTableColumns(chunks);
     expect(Object.keys(columns).sort()).toEqual(
       ["articleRef", "content", "documentId", "embedding", "id", "page", "tokenCount"].sort(),
     );
   });
 
-  it("chunks tiene un índice HNSW sobre embedding", () => {
+  it("chunks has an HNSW index on embedding", () => {
     const { indexes } = getTableConfig(chunks);
     const embeddingIndex = indexes.find((idx) => idx.config.name === "chunks_embedding_idx");
     expect(embeddingIndex).toBeDefined();
     expect(embeddingIndex?.config.method).toBe("hnsw");
   });
 
-  it("eval_results referencia eval_runs", () => {
+  it("eval_results references eval_runs", () => {
     const columns = getTableColumns(evalResults);
     expect(columns.runId).toBeDefined();
   });

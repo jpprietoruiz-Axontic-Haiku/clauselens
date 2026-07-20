@@ -15,7 +15,7 @@ const ingestRequestSchema = z.object({
   jurisdiction: z.string().min(1),
   version: z.string().min(1),
   contentType: z.enum(["pdf", "html"]),
-  // PDF en base64; HTML como texto plano.
+  // PDF as base64; HTML as plain text.
   content: z.string().min(1),
 });
 
@@ -35,7 +35,7 @@ export function createApp(deps: AppDeps): Hono {
       const result = await ingestDocument(deps.db, deps.embedder, parsed.data);
       return c.json(result, 201);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Error desconocido durante la ingesta.";
+      const message = error instanceof Error ? error.message : "Unknown error during ingestion.";
       return c.json({ error: "ingest_failed", message }, 500);
     }
   });

@@ -1,7 +1,7 @@
 import type { Citation } from "@clauselens/db";
 import type { UIMessage } from "ai";
 
-/** Fragmento fuente que sustenta una cita — lo que la UI necesita para "abrir" la cita. */
+/** Source fragment backing a citation — what the UI needs to "open" the citation. */
 export interface CitationSource {
   chunkId: string;
   documentId: string;
@@ -21,8 +21,8 @@ export interface ConversationPayload {
   conversationId: string;
 }
 
-/** UIMessage con los data parts propios de ClauseLens tipados de punta a punta
- * (servidor: createUIMessageStream<ClauseLensUIMessage>; cliente: useChat<ClauseLensUIMessage>). */
+/** UIMessage with ClauseLens's own data parts typed end to end
+ * (server: createUIMessageStream<ClauseLensUIMessage>; client: useChat<ClauseLensUIMessage>). */
 export type ClauseLensUIMessage = UIMessage<
   never,
   {

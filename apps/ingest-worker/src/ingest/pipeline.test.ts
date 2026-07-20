@@ -19,16 +19,16 @@ function fakeEmbedder(dimensions = 8): Embedder {
 const SYNTHETIC_HTML = `
 <html><body>
   <p class="oj-ti-art">Article 1</p>
-  <p class="oj-normal">Cuerpo normativo de prueba para el artículo 1.</p>
+  <p class="oj-normal">Test regulatory body for article 1.</p>
   <p class="oj-ti-art">Article 2</p>
-  <p class="oj-normal">Cuerpo normativo de prueba para el artículo 2.</p>
+  <p class="oj-normal">Test regulatory body for article 2.</p>
 </body></html>
 `;
 
-describe("buildIngestion (con embedder falso, sin DB)", () => {
-  it("produce un chunk por embedding y conserva los metadatos del documento", async () => {
+describe("buildIngestion (with a fake embedder, no DB)", () => {
+  it("produces one chunk per embedding and preserves the document metadata", async () => {
     const built = await buildIngestion(fakeEmbedder(), {
-      title: "Documento de prueba",
+      title: "Test document",
       sourceUrl: "https://example.org/doc",
       jurisdiction: "EU",
       version: "1.0",
@@ -37,7 +37,7 @@ describe("buildIngestion (con embedder falso, sin DB)", () => {
     });
 
     expect(built.document).toEqual({
-      title: "Documento de prueba",
+      title: "Test document",
       sourceUrl: "https://example.org/doc",
       jurisdiction: "EU",
       version: "1.0",
@@ -54,22 +54,22 @@ describe("buildIngestion (con embedder falso, sin DB)", () => {
     expect(articleRefs.has("Article 2")).toBe(true);
   });
 
-  it("rechaza contenido del que no se puede extraer texto", async () => {
+  it("rejects content from which no text can be extracted", async () => {
     await expect(
       buildIngestion(fakeEmbedder(), {
-        title: "Vacío",
+        title: "Empty",
         sourceUrl: "https://example.org/empty",
         jurisdiction: "EU",
         version: "1.0",
         contentType: "html",
         content: "<html><body></body></html>",
       }),
-    ).rejects.toThrow(/No se extrajo texto/);
+    ).rejects.toThrow(/No text was extracted/);
   });
 });
 
-describe("buildIngestion (corpus real, smoke test end-to-end sin API/DB)", () => {
-  it("procesa el GDPR real (HTML) de punta a punta", async () => {
+describe("buildIngestion (real corpus, end-to-end smoke test without API/DB)", () => {
+  it("processes the real GDPR (HTML) end to end", async () => {
     const html = await readFile(path.join(CORPUS_DIR, "gdpr.html"), "utf-8");
     const built = await buildIngestion(fakeEmbedder(), {
       title: "GDPR",
@@ -80,14 +80,14 @@ describe("buildIngestion (corpus real, smoke test end-to-end sin API/DB)", () =>
       content: html,
     });
 
-    // El GDPR real produce ~245 chunks (99 artículos + preámbulo); se deja
-    // margen en vez de fijar el número exacto para no ser frágiles ante
-    // cambios menores de tokenización.
+    // The real GDPR produces ~245 chunks (99 articles + preamble); a margin
+    // is left instead of pinning the exact number, to avoid being fragile
+    // against minor tokenization changes.
     expect(built.chunks.length).toBeGreaterThan(150);
     for (const chunk of built.chunks) {
       expect(chunk.tokenCount).toBeGreaterThan(0);
-      // Cota de peor caso de chunkSections: maxTokens + overlapTokens
-      // (el solape se antepone entero para no partir frases a mitad).
+      // Worst-case bound of chunkSections: maxTokens + overlapTokens (the
+      // overlap is prepended whole so as not to cut sentences in half).
       expect(chunk.tokenCount).toBeLessThanOrEqual(MAX_CHUNK_TOKENS_WITH_OVERLAP);
       expect(chunk.embedding).toHaveLength(8);
     }
@@ -95,7 +95,7 @@ describe("buildIngestion (corpus real, smoke test end-to-end sin API/DB)", () =>
     expect(withArticle.length).toBeGreaterThan(100);
   }, 30_000);
 
-  it("procesa el EU AI Act real (PDF) de punta a punta", async () => {
+  it("processes the real EU AI Act (PDF) end to end", async () => {
     const buffer = await readFile(path.join(CORPUS_DIR, "eu-ai-act.pdf"));
     const built = await buildIngestion(fakeEmbedder(), {
       title: "EU AI Act",
@@ -110,8 +110,8 @@ describe("buildIngestion (corpus real, smoke test end-to-end sin API/DB)", () =>
     const withPage = built.chunks.filter((c) => typeof c.page === "number");
     expect(withPage.length).toBe(built.chunks.length);
     for (const chunk of built.chunks) {
-      // Cota de peor caso de chunkSections: maxTokens + overlapTokens
-      // (el solape se antepone entero para no partir frases a mitad).
+      // Worst-case bound of chunkSections: maxTokens + overlapTokens (the
+      // overlap is prepended whole so as not to cut sentences in half).
       expect(chunk.tokenCount).toBeLessThanOrEqual(MAX_CHUNK_TOKENS_WITH_OVERLAP);
     }
   }, 60_000);

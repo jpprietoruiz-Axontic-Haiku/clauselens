@@ -10,7 +10,7 @@ function chunkWith(vectorScore: number | null): RetrievedChunk {
     sourceUrl: "https://example.org",
     articleRef: null,
     page: null,
-    content: "contenido",
+    content: "content",
     vectorScore,
     keywordScore: null,
     fusedScore: 0.5,
@@ -18,24 +18,24 @@ function chunkWith(vectorScore: number | null): RetrievedChunk {
 }
 
 describe("hasSufficientBasis", () => {
-  it("sin resultados, no hay base suficiente", () => {
+  it("with no results, there is no sufficient basis", () => {
     expect(hasSufficientBasis([])).toBe(false);
   });
 
-  it("por debajo del umbral, no hay base suficiente", () => {
+  it("below the threshold, there is no sufficient basis", () => {
     expect(hasSufficientBasis([chunkWith(CONFIDENCE_THRESHOLD - 0.01)])).toBe(false);
   });
 
-  it("en el umbral o por encima, hay base suficiente", () => {
+  it("at or above the threshold, there is sufficient basis", () => {
     expect(hasSufficientBasis([chunkWith(CONFIDENCE_THRESHOLD)])).toBe(true);
     expect(hasSufficientBasis([chunkWith(CONFIDENCE_THRESHOLD + 0.1)])).toBe(true);
   });
 
-  it("un chunk que solo vino de la pata léxica (vectorScore null) se trata como score 0", () => {
+  it("a chunk that only came from the lexical leg (vectorScore null) is treated as score 0", () => {
     expect(hasSufficientBasis([chunkWith(null)])).toBe(false);
   });
 
-  it("solo mira el primer resultado (se asume orden por fusedScore descendente)", () => {
+  it("only looks at the first result (assumes descending fusedScore order)", () => {
     const results = [chunkWith(0.9), chunkWith(0.01)];
     expect(hasSufficientBasis(results)).toBe(true);
   });

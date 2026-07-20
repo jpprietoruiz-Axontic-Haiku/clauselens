@@ -1,62 +1,62 @@
 [
   {
     "id": "gdpr-principles",
-    "question": "¿Cuáles son los principios que deben regir el tratamiento de datos personales según el GDPR?",
-    "idealAnswer": "El artículo 5 del GDPR establece que los datos personales deben tratarse de forma lícita, leal y transparente; recogerse con fines determinados, explícitos y legítimos (limitación de la finalidad); ser adecuados, pertinentes y limitados a lo necesario (minimización de datos); exactos y actualizados; conservados solo durante el tiempo necesario (limitación del plazo de conservación); y tratados de forma que se garantice su seguridad (integridad y confidencialidad). El responsable del tratamiento debe poder demostrar el cumplimiento de estos principios (responsabilidad proactiva).",
+    "question": "What principles must govern the processing of personal data under the GDPR?",
+    "idealAnswer": "Article 5 of the GDPR states that personal data must be processed lawfully, fairly and transparently; collected for specified, explicit and legitimate purposes (purpose limitation); adequate, relevant and limited to what is necessary (data minimisation); accurate and kept up to date; kept for no longer than necessary (storage limitation); and processed in a manner that ensures appropriate security (integrity and confidentiality). The controller must be able to demonstrate compliance with these principles (accountability).",
     "expectedArticleRefs": ["Article 5"]
   },
   {
     "id": "gdpr-lawful-basis",
-    "question": "¿Cuáles son las bases legales que permiten el tratamiento lícito de datos personales?",
-    "idealAnswer": "Según el artículo 6 del GDPR, el tratamiento es lícito si se cumple al menos una de estas condiciones: el interesado dio su consentimiento; el tratamiento es necesario para la ejecución de un contrato; es necesario para cumplir una obligación legal; es necesario para proteger intereses vitales del interesado; es necesario para el cumplimiento de una misión de interés público; o es necesario para la satisfacción de intereses legítimos perseguidos por el responsable del tratamiento.",
+    "question": "What legal bases make the processing of personal data lawful?",
+    "idealAnswer": "Under Article 6 of the GDPR, processing is lawful only if at least one of the following applies: the data subject has given consent; processing is necessary for the performance of a contract; it is necessary for compliance with a legal obligation; it is necessary to protect the vital interests of the data subject; it is necessary for the performance of a task carried out in the public interest; or it is necessary for the purposes of the legitimate interests pursued by the controller.",
     "expectedArticleRefs": ["Article 6"]
   },
   {
     "id": "gdpr-right-to-erasure",
-    "question": "¿Qué es el derecho al olvido y cuándo se puede ejercer?",
-    "idealAnswer": "El artículo 17 del GDPR reconoce el derecho de supresión (\"derecho al olvido\"): el interesado tiene derecho a que se supriman sin dilación indebida sus datos personales cuando, entre otros casos, los datos ya no sean necesarios para los fines que motivaron su recogida, el interesado retire el consentimiento en que se basaba el tratamiento, o el tratamiento haya sido ilícito.",
+    "question": "What is the right to erasure and when can it be exercised?",
+    "idealAnswer": "Article 17 of the GDPR grants the right to erasure (\"right to be forgotten\"): the data subject has the right to obtain the erasure of personal data without undue delay where, among other grounds, the data are no longer necessary for the purposes for which they were collected, the data subject withdraws the consent on which processing was based, or the processing has been unlawful.",
     "expectedArticleRefs": ["Article 17"]
   },
   {
     "id": "gdpr-personal-data-definition",
-    "question": "¿Qué se entiende por \"datos personales\" según el GDPR?",
-    "idealAnswer": "El artículo 4 del GDPR define los datos personales como toda información sobre una persona física identificada o identificable; se considera identificable a la persona que pueda ser identificada, directa o indirectamente, en particular mediante un identificador como un nombre, un número de identificación, datos de localización, un identificador en línea o uno o varios elementos propios de su identidad física, fisiológica, genética, psíquica, económica, cultural o social.",
+    "question": "What is meant by \"personal data\" under the GDPR?",
+    "idealAnswer": "Article 4 of the GDPR defines personal data as any information relating to an identified or identifiable natural person; an identifiable natural person is one who can be identified, directly or indirectly, in particular by reference to an identifier such as a name, an identification number, location data, an online identifier, or one or more factors specific to their physical, physiological, genetic, mental, economic, cultural or social identity.",
     "expectedArticleRefs": ["Article 4"]
   },
   {
     "id": "gdpr-breach-notification",
-    "question": "¿En qué plazo debe notificarse una violación de seguridad de datos personales a la autoridad de control?",
-    "idealAnswer": "Según el artículo 33 del GDPR, en caso de violación de la seguridad de los datos personales, el responsable del tratamiento debe notificarla a la autoridad de control competente sin dilación indebida y, de ser posible, a más tardar 72 horas después de haber tenido constancia de ella, salvo que sea improbable que dicha violación constituya un riesgo para los derechos y libertades de las personas físicas.",
+    "question": "Within what time limit must a personal data breach be notified to the supervisory authority?",
+    "idealAnswer": "Under Article 33 of the GDPR, in the case of a personal data breach the controller must notify the competent supervisory authority without undue delay and, where feasible, not later than 72 hours after having become aware of it, unless the breach is unlikely to result in a risk to the rights and freedoms of natural persons.",
     "expectedArticleRefs": ["Article 33"]
   },
   {
     "id": "ai-act-prohibited-practices",
-    "question": "¿Qué prácticas de inteligencia artificial están prohibidas según el Reglamento de IA de la UE?",
-    "idealAnswer": "El artículo 5 del EU AI Act prohíbe, entre otras prácticas, la introducción en el mercado o el uso de sistemas de IA que empleen técnicas subliminales que trasciendan la consciencia de una persona, o técnicas deliberadamente manipuladoras o engañosas, con el objetivo o el efecto de distorsionar materialmente el comportamiento de una persona o grupo de personas, mermando apreciablemente su capacidad para tomar una decisión informada, de un modo que les cause o sea razonablemente probable que les cause perjuicios considerables.",
+    "question": "What artificial intelligence practices are prohibited under the EU AI Act?",
+    "idealAnswer": "Article 5 of the EU AI Act prohibits, among other practices, the placing on the market or use of AI systems that deploy subliminal techniques beyond a person's consciousness, or purposefully manipulative or deceptive techniques, with the objective or effect of materially distorting the behaviour of a person or group of persons by appreciably impairing their ability to make an informed decision, in a manner that causes or is reasonably likely to cause significant harm.",
     "expectedArticleRefs": ["Article 5"]
   },
   {
     "id": "ai-act-high-risk",
-    "question": "¿Cuándo se considera que un sistema de IA es de alto riesgo según el Reglamento de IA de la UE?",
-    "idealAnswer": "Según el artículo 6 del EU AI Act, un sistema de IA se considera de alto riesgo cuando está destinado a utilizarse como componente de seguridad de un producto (o es en sí mismo un producto) cubierto por la legislación de armonización de la Unión enumerada en el anexo I, y cuando ese producto (o su componente de seguridad basado en IA) debe someterse a una evaluación de conformidad por terceros con vistas a la introducción en el mercado o la puesta en servicio de dicho producto.",
+    "question": "When is an AI system considered high-risk under the EU AI Act?",
+    "idealAnswer": "Under Article 6 of the EU AI Act, an AI system is considered high-risk when it is intended to be used as a safety component of a product (or is itself a product) covered by the Union harmonisation legislation listed in Annex I, and where that product (or its AI-based safety component) is required to undergo a third-party conformity assessment with a view to the placing on the market or putting into service of that product.",
     "expectedArticleRefs": ["Article 6"]
   },
   {
     "id": "ai-act-system-definition",
-    "question": "¿Qué es un \"sistema de IA\" según la definición del Reglamento de IA de la UE?",
-    "idealAnswer": "El artículo 3 del EU AI Act define un sistema de IA como un sistema basado en una máquina que está diseñado para funcionar con distintos niveles de autonomía y que puede mostrar capacidad de adaptación tras el despliegue, y que, para objetivos explícitos o implícitos, infiere de la información de entrada que recibe la manera de generar resultados de salida, como predicciones, contenidos, recomendaciones o decisiones que pueden influir en entornos físicos o virtuales.",
+    "question": "What is an \"AI system\" according to the EU AI Act's definition?",
+    "idealAnswer": "Article 3 of the EU AI Act defines an AI system as a machine-based system that is designed to operate with varying levels of autonomy and that may exhibit adaptiveness after deployment, and that, for explicit or implicit objectives, infers from the input it receives how to generate outputs such as predictions, content, recommendations, or decisions that can influence physical or virtual environments.",
     "expectedArticleRefs": ["Article 3"]
   },
   {
     "id": "out-of-corpus-capital",
-    "question": "¿Cuál es la capital de Australia?",
-    "idealAnswer": "El corpus de ClauseLens (GDPR y EU AI Act) no contiene información geográfica ni sobre capitales de países, así que el sistema debe responder que no tiene base suficiente en vez de inventar una respuesta.",
+    "question": "What is the capital of Australia?",
+    "idealAnswer": "ClauseLens's corpus (GDPR and EU AI Act) contains no geographic information or information about country capitals, so the system should answer that it doesn't have enough basis instead of making up an answer.",
     "expectedArticleRefs": []
   },
   {
     "id": "out-of-corpus-cookies",
-    "question": "¿Qué dice el Reglamento sobre el uso de cookies de terceros en sitios web?",
-    "idealAnswer": "El uso de cookies se regula principalmente por la Directiva ePrivacy, no por el GDPR ni por el EU AI Act, que son el corpus ingerido. El sistema debe indicar que no tiene base suficiente en el corpus para responder con confianza, en vez de mezclar normativa no incluida.",
+    "question": "What does the Regulation say about the use of third-party cookies on websites?",
+    "idealAnswer": "The use of cookies is mainly regulated by the ePrivacy Directive, not by the GDPR or the EU AI Act, which make up the ingested corpus. The system should state that it doesn't have enough basis in the corpus to answer with confidence, instead of mixing in regulation that isn't included.",
     "expectedArticleRefs": []
   }
 ]

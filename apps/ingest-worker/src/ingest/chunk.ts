@@ -1,7 +1,7 @@
 import { getEncoding } from "js-tiktoken";
 import type { Chunk, ParsedSection } from "./types.js";
 
-// cl100k_base es el tokenizer usado por la familia text-embedding-3-*.
+// cl100k_base is the tokenizer used by the text-embedding-3-* family.
 const encoding = getEncoding("cl100k_base");
 
 export function countTokens(text: string): number {
@@ -18,10 +18,10 @@ export const DEFAULT_CHUNK_OPTIONS: ChunkOptions = {
   overlapTokens: 60,
 };
 
-// Última instancia: una sola frase que por sí sola supera maxTokens (poco
-// habitual, pero ocurre en texto legal denso) se corta en ventanas de
-// tokens. Ya no es un corte "semántico", pero garantiza el límite duro que
-// exige el modelo de embeddings.
+// Last resort: a single sentence that by itself exceeds maxTokens (rare,
+// but it happens in dense legal text) gets cut into token windows. This is
+// no longer a "semantic" cut, but it guarantees the hard limit the
+// embedding model requires.
 function hardSplitByTokens(text: string, maxTokens: number): string[] {
   const tokens = encoding.encode(text);
   const parts: string[] = [];
@@ -31,9 +31,9 @@ function hardSplitByTokens(text: string, maxTokens: number): string[] {
   return parts.filter((part) => part.length > 0);
 }
 
-// Divide una sección en "unidades" (párrafos, o frases si un párrafo por sí
-// solo excede maxTokens) que luego se empaquetan en chunks. Toda unidad
-// devuelta tiene como máximo maxTokens tokens.
+// Splits a section into "units" (paragraphs, or sentences if a paragraph by
+// itself exceeds maxTokens) that are later packed into chunks. Every
+// returned unit has at most maxTokens tokens.
 function splitIntoUnits(text: string, maxTokens: number): string[] {
   const paragraphs = text
     .split(/\n{2,}/)
@@ -65,10 +65,10 @@ function splitIntoUnits(text: string, maxTokens: number): string[] {
   return countTokens(trimmed) <= maxTokens ? [trimmed] : hardSplitByTokens(trimmed, maxTokens);
 }
 
-// Empaqueta unidades (párrafo/frase) en chunks de hasta maxTokens, con
-// solape semántico entre chunks consecutivos. Cota en el peor caso:
-// maxTokens + overlapTokens (el solape se antepone sin recortarse antes de
-// añadir la siguiente unidad, para no partir frases a mitad).
+// Packs units (paragraph/sentence) into chunks of up to maxTokens, with
+// semantic overlap between consecutive chunks. Worst-case bound:
+// maxTokens + overlapTokens (the overlap is prepended without trimming
+// before adding the next unit, so as not to cut sentences in half).
 export function chunkSections(sections: ParsedSection[], options: ChunkOptions = DEFAULT_CHUNK_OPTIONS): Chunk[] {
   const chunks: Chunk[] = [];
 
@@ -95,12 +95,12 @@ export function chunkSections(sections: ParsedSection[], options: ChunkOptions =
       if (buffer.length > 0 && bufferTokens + unitTokens > options.maxTokens) {
         flush();
 
-        // Solape semántico: se retienen las últimas unidades del chunk
-        // anterior hasta acercarse a overlapTokens, sin cortar a mitad de frase.
-        // Se detiene ANTES de añadir una unidad que haría que el solape
-        // superase overlapTokens (en vez de comprobarlo después), para que
-        // el solape en sí quede acotado con independencia del tamaño de
-        // las unidades — si no cabe ninguna, el solape queda vacío.
+        // Semantic overlap: the last units of the previous chunk are kept
+        // until getting close to overlapTokens, without cutting a sentence
+        // in half. It stops BEFORE adding a unit that would push the
+        // overlap past overlapTokens (rather than checking afterward), so
+        // the overlap itself stays bounded regardless of unit size — if
+        // none fits, the overlap is left empty.
         const overlapUnits: string[] = [];
         let overlapTokens = 0;
         for (let i = buffer.length - 1; i >= 0; i--) {

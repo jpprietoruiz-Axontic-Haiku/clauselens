@@ -1,6 +1,6 @@
 # @clauselens/web
 
-Frontend + API routes (Next.js 15 App Router) de ClauseLens. Ver el [README raíz](../../README.md) para el quickstart del monorepo.
+ClauseLens frontend + API routes (Next.js 15 App Router). See the [root README](../../README.md) for the monorepo quickstart.
 
 ```bash
 npm run dev --workspace=@clauselens/web

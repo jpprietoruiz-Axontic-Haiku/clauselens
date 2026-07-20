@@ -13,8 +13,8 @@ import {
   vector,
 } from "drizzle-orm/pg-core";
 
-// text-embedding-3-large (OpenAI) produce vectores de 3072 dimensiones; si se
-// cambia de modelo de embeddings hay que migrar esta columna y reindexar.
+// text-embedding-3-large (OpenAI) produces 3072-dimension vectors; changing
+// the embedding model requires migrating this column and reindexing.
 const EMBEDDING_DIMENSIONS = 3072;
 
 export const messageRoleEnum = pgEnum("message_role", ["user", "assistant", "system"]);
@@ -44,8 +44,8 @@ export const chunks = pgTable(
   (table) => [
     index("chunks_document_id_idx").on(table.documentId),
     index("chunks_embedding_idx").using("hnsw", table.embedding.op("vector_cosine_ops")),
-    // Índice de expresión GIN para la pata léxica del retrieval híbrido
-    // (Hito 3): evita materializar una columna tsvector aparte.
+    // GIN expression index for the lexical leg of hybrid retrieval: avoids
+    // materializing a separate tsvector column.
     index("chunks_content_fts_idx").using("gin", sql`to_tsvector('english', ${table.content})`),
   ],
 );

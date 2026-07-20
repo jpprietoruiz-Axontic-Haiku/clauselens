@@ -6,10 +6,10 @@ export interface RetrievedChunk {
   articleRef: string | null;
   page: number | null;
   content: string;
-  /** Similitud coseno (0..1 aprox.), null si el chunk no apareció en la pata vectorial. */
+  /** Cosine similarity (~0..1), null if the chunk didn't appear on the vector leg. */
   vectorScore: number | null;
-  /** ts_rank de Postgres, null si el chunk no apareció en la pata léxica. */
+  /** Postgres ts_rank, null if the chunk didn't appear on the lexical leg. */
   keywordScore: number | null;
-  /** Reciprocal Rank Fusion de ambas patas; se usa para ordenar el resultado final. */
+  /** Reciprocal Rank Fusion of both legs; used to sort the final result. */
   fusedScore: number;
 }

@@ -28,7 +28,7 @@ export function CitationDialog({ source, onOpenChange }: CitationDialogProps) {
             rel="noreferrer"
             className="text-sm text-primary underline underline-offset-4"
           >
-            Ver fuente original
+            View original source
           </a>
         )}
       </DialogContent>

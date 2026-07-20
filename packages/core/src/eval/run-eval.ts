@@ -14,7 +14,7 @@ export interface RunEvalDeps {
   embedder: Embedder;
   chatModel: LanguageModel;
   chatModelId: string;
-  /** Modelo usado como juez (puede ser el mismo que chatModel). */
+  /** Model used as the judge (can be the same as chatModel). */
   judgeModel: LanguageModel;
 }
 
@@ -59,8 +59,8 @@ export async function evaluateQuestion(deps: RunEvalDeps, golden: GoldenQuestion
 
 export async function evaluateGoldenSet(deps: RunEvalDeps, goldenSet: GoldenQuestion[]): Promise<EvalResult[]> {
   const results: EvalResult[] = [];
-  // Secuencial a propósito: facilita leer logs de progreso y evita saturar
-  // de golpe la API del LLM con un golden set que puede crecer.
+  // Sequential on purpose: makes progress logs easier to read and avoids
+  // hammering the LLM API all at once as the golden set grows.
   for (const golden of goldenSet) {
     results.push(await evaluateQuestion(deps, golden));
   }

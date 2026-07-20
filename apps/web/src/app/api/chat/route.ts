@@ -11,18 +11,18 @@ import { z } from "zod";
 import type { CitationSource, ClauseLensUIMessage } from "@/lib/chat-types";
 import { getChatModelInstance, getDb, getEmbedder } from "@/lib/deps";
 
-// Vercel: tiempo máximo permitido para la respuesta en streaming.
+// Vercel: maximum time allowed for the streaming response.
 export const maxDuration = 30;
 
 const chatRequestSchema = z.object({
   conversationId: z.string().uuid().optional(),
-  message: z.string().min(1, "El mensaje no puede estar vacío"),
+  message: z.string().min(1, "The message cannot be empty"),
 });
 
 async function createConversation(db: Database): Promise<string> {
   const [conversation] = await db.insert(conversations).values({}).returning({ id: conversations.id });
   if (!conversation) {
-    throw new Error("No se pudo crear la conversación.");
+    throw new Error("Could not create the conversation.");
   }
   return conversation.id;
 }
@@ -36,11 +36,11 @@ export async function POST(req: Request): Promise<Response> {
 
   const { message } = parsed.data;
 
-  // Todo lo previo a abrir el stream (crear conversación, guardar el
-  // mensaje del usuario, embeber, recuperar) puede fallar por causas
-  // "normales" (DB caída, API key inválida): se devuelve JSON con un
-  // status de error explícito en vez de dejar que Next.js sirva su página
-  // de error HTML por defecto, que el cliente del AI SDK no sabe interpretar.
+  // Everything before opening the stream (creating the conversation, saving
+  // the user's message, embedding, retrieving) can fail for "normal"
+  // reasons (DB down, invalid API key): a JSON response with an explicit
+  // error status is returned instead of letting Next.js serve its default
+  // HTML error page, which the AI SDK client doesn't know how to parse.
   let db: Database;
   let conversationId: string;
   let retrieved: Awaited<ReturnType<typeof hybridSearch>>;
@@ -50,16 +50,16 @@ export async function POST(req: Request): Promise<Response> {
     await db.insert(messagesTable).values({ conversationId, role: "user", content: message });
 
     const queryEmbedding = await embedOne(getEmbedder(), message);
-    // "Buscando en el corpus": recuperación híbrida (vector + léxica) antes
-    // de decidir si hay base suficiente para responder.
+    // "Searching the corpus": hybrid retrieval (vector + lexical) before
+    // deciding whether there is enough basis to answer.
     retrieved = await hybridSearch(db, queryEmbedding, message, { topK: 5 });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Error desconocido preparando la respuesta.";
+    const errorMessage = error instanceof Error ? error.message : "Unknown error preparing the response.";
     return Response.json({ error: "chat_prepare_failed", message: errorMessage }, { status: 500 });
   }
 
   const stream = createUIMessageStream<ClauseLensUIMessage>({
-    onError: (error) => (error instanceof Error ? error.message : "Error generando la respuesta."),
+    onError: (error) => (error instanceof Error ? error.message : "Error generating the response."),
     execute: ({ writer }) => {
       writer.write({ type: "data-conversation", data: { conversationId } });
 
@@ -72,7 +72,7 @@ export async function POST(req: Request): Promise<Response> {
         writer.write({ type: "text-delta", id: "answer", delta: NO_BASIS_MESSAGE });
         writer.write({ type: "text-end", id: "answer" });
 
-        // No se llama al LLM: sin base suficiente, no hay nada que redactar.
+        // The LLM is not called: without enough basis, there's nothing to draft.
         void db.insert(messagesTable).values({
           conversationId,
           role: "assistant",
@@ -99,7 +99,7 @@ export async function POST(req: Request): Promise<Response> {
       }));
       writer.write({ type: "data-citations", data: { citations, sources } });
 
-      // "Redactando": el modelo genera la respuesta citando el contexto recuperado.
+      // "Drafting": the model generates the response citing the retrieved context.
       const result = streamText({
         model: getChatModelInstance(),
         messages: buildChatMessages(message, retrieved),

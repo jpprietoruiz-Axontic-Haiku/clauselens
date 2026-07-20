@@ -2,7 +2,7 @@ export interface GoldenQuestion {
   id: string;
   question: string;
   idealAnswer: string;
-  /** Números de artículo esperados (p. ej. "Article 5"); [] si se espera "no tengo base suficiente". */
+  /** Expected article numbers (e.g. "Article 5"); [] if "not enough basis" is expected. */
   expectedArticleRefs: string[];
 }
 

@@ -11,44 +11,44 @@ export interface JudgeScore {
   reasoning: string;
 }
 
-/** ¿Todas las afirmaciones de la respuesta están respaldadas por el contexto recuperado? */
+/** Are all the claims in the answer backed by the retrieved context? */
 export async function judgeFaithfulness(model: LanguageModel, answer: string, context: string): Promise<JudgeScore> {
   const { output } = await generateText({
     model,
     output: Output.object({ schema: judgeScoreSchema }),
-    prompt: `Eres un evaluador estricto de un sistema RAG normativo. Se te da un CONTEXTO (fragmentos recuperados de un corpus legal) y una RESPUESTA generada a partir de ese contexto.
+    prompt: `You are a strict evaluator of a regulatory RAG system. You are given a CONTEXT (fragments retrieved from a legal corpus) and an ANSWER generated from that context.
 
-Evalúa si TODAS las afirmaciones de la RESPUESTA están respaldadas por el CONTEXTO, sin añadir información inventada. Devuelve:
-- score = 1 si cada afirmación de la respuesta se apoya en el contexto.
-- score = 0 si la respuesta inventa información que no está en el contexto (alucinación).
-- un valor intermedio si solo una parte de la respuesta está respaldada.
+Evaluate whether ALL the claims in the ANSWER are backed by the CONTEXT, without adding made-up information. Return:
+- score = 1 if every claim in the answer is supported by the context.
+- score = 0 if the answer makes up information that is not in the context (hallucination).
+- an intermediate value if only part of the answer is supported.
 
-Si la respuesta es explícitamente "no tengo base suficiente" o equivalente, score = 1 (no afirma nada que pueda ser falso).
+If the answer explicitly says "I don't have enough basis" or equivalent, score = 1 (it doesn't assert anything that could be false).
 
-CONTEXTO:
-${context || "(sin contexto: no se recuperó ningún fragmento)"}
+CONTEXT:
+${context || "(no context: no fragment was retrieved)"}
 
-RESPUESTA:
+ANSWER:
 ${answer}`,
   });
   return output;
 }
 
-/** ¿La respuesta aborda directamente lo que se preguntó? */
+/** Does the answer directly address what was asked? */
 export async function judgeAnswerRelevancy(model: LanguageModel, question: string, answer: string): Promise<JudgeScore> {
   const { output } = await generateText({
     model,
     output: Output.object({ schema: judgeScoreSchema }),
-    prompt: `Eres un evaluador estricto de un sistema RAG normativo. Dada una PREGUNTA y una RESPUESTA, evalúa en qué medida la respuesta aborda directamente lo que se preguntó. Devuelve:
-- score = 1 si la respuesta aborda completa y directamente la pregunta.
-- score = 0 si es irrelevante, evasiva o no responde a lo preguntado.
-- un valor intermedio si la responde solo parcialmente.
+    prompt: `You are a strict evaluator of a regulatory RAG system. Given a QUESTION and an ANSWER, evaluate how directly the answer addresses what was asked. Return:
+- score = 1 if the answer fully and directly addresses the question.
+- score = 0 if it is irrelevant, evasive, or doesn't answer what was asked.
+- an intermediate value if it only answers partially.
 
-Si la pregunta está fuera del ámbito del corpus y la respuesta lo indica honestamente en vez de inventar (p. ej. "no tengo base suficiente"), score = 1: esa es la respuesta correcta para una pregunta sin soporte.
+If the question is outside the scope of the corpus and the answer honestly says so instead of making something up (e.g. "I don't have enough basis"), score = 1: that's the correct answer for an unsupported question.
 
-PREGUNTA: ${question}
+QUESTION: ${question}
 
-RESPUESTA: ${answer}`,
+ANSWER: ${answer}`,
   });
   return output;
 }

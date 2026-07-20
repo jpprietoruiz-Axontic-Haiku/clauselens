@@ -1,7 +1,7 @@
-// Precios aproximados en USD por millón de tokens (input/output), a fecha de
-// escritura. Solo se usan para dar una cifra orientativa en el dashboard de
-// eval, no para facturación real — si el proveedor cambia precios o el
-// modelo no está en esta tabla, se usa una tarifa por defecto conservadora.
+// Approximate prices in USD per million tokens (input/output), as of
+// writing. Only used to give an indicative figure in the eval dashboard,
+// not for real billing — if the provider changes prices or the model isn't
+// in this table, a conservative default rate is used.
 const PRICING_PER_MILLION_TOKENS: Record<string, { input: number; output: number }> = {
   "claude-sonnet-5": { input: 3, output: 15 },
   "claude-haiku-4-5": { input: 0.8, output: 4 },

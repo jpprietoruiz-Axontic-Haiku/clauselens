@@ -4,9 +4,9 @@ import { fileURLToPath } from "node:url";
 import type { GoldenQuestion } from "./types.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// golden-set.json vive en la raíz del paquete (no en src/ ni en dist/) para
-// que esta ruta relativa resuelva igual en dev (tsx sobre src/eval) y en
-// producción (node sobre dist/eval) sin necesidad de copiarlo en el build.
+// golden-set.json lives at the package root (not in src/ nor dist/) so this
+// relative path resolves the same way in dev (tsx over src/eval) and in
+// production (node over dist/eval) without needing to copy it during build.
 const GOLDEN_SET_PATH = path.resolve(__dirname, "../../golden-set.json");
 
 export function loadGoldenSet(): GoldenQuestion[] {

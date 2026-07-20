@@ -4,11 +4,11 @@ import type { ParsedSection } from "./types.js";
 
 const BLOCK_SELECTOR = "p, h1, h2, h3, h4, h5, h6, li";
 
-// Clases de EUR-Lex: "oj-ti-art" es el número del artículo ("Article 1") y
-// "oj-sti-art" es su nombre descriptivo ("Subject-matter and objectives"),
-// en un <p> aparte justo a continuación. Deben compararse como tokens
-// exactos: "oj-sti-art" contiene la subcadena "ti-art", así que un
-// `.includes()` ingenuo confunde el subtítulo con el número de artículo.
+// EUR-Lex classes: "oj-ti-art" is the article number ("Article 1") and
+// "oj-sti-art" is its descriptive name ("Subject-matter and objectives"),
+// in a separate <p> right after it. They must be compared as exact tokens:
+// "oj-sti-art" contains the substring "ti-art", so a naive `.includes()`
+// confuses the subtitle with the article number.
 function hasClassToken(className: string, token: string): boolean {
   return className.split(/\s+/).includes(token);
 }

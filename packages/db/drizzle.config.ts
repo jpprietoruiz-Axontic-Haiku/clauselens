@@ -1,12 +1,12 @@
 import { config } from "dotenv";
 import { defineConfig } from "drizzle-kit";
 
-// El monorepo mantiene un único .env en la raíz (ver .env.example).
+// The monorepo keeps a single .env at the root (see .env.example).
 config({ path: "../../.env" });
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
-  throw new Error("DATABASE_URL no está definido (revisa el .env de la raíz del monorepo).");
+  throw new Error("DATABASE_URL is not defined (check the monorepo's root .env).");
 }
 
 export default defineConfig({

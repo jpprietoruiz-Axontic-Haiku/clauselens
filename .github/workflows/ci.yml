@@ -43,7 +43,7 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Aplicar migraciones (valida el schema contra Postgres real)
+      - name: Apply migrations (validates the schema against real Postgres)
         run: npm run db:migrate
 
       - name: Test

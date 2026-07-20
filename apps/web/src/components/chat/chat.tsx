@@ -44,7 +44,7 @@ export function Chat() {
   });
 
   const isBusy = status === "submitted" || status === "streaming";
-  const statusLabel = status === "submitted" ? "Buscando en el corpus…" : status === "streaming" ? "Redactando…" : null;
+  const statusLabel = status === "submitted" ? "Searching the corpus…" : status === "streaming" ? "Drafting…" : null;
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -60,7 +60,7 @@ export function Chat() {
         <div className="mx-auto flex max-w-2xl flex-col gap-4 py-6">
           {messages.length === 0 && (
             <p className="text-sm text-muted-foreground">
-              Pregunta algo sobre el GDPR o el EU AI Act — las respuestas citan el artículo exacto.
+              Ask something about the GDPR or the EU AI Act — answers cite the exact article.
             </p>
           )}
 
@@ -82,7 +82,7 @@ export function Chat() {
           ))}
 
           {statusLabel && <p className="text-xs text-muted-foreground">{statusLabel}</p>}
-          {error && <p className="text-xs text-destructive">Ha ocurrido un error: {error.message}</p>}
+          {error && <p className="text-xs text-destructive">An error occurred: {error.message}</p>}
         </div>
       </ScrollArea>
 
@@ -99,12 +99,12 @@ export function Chat() {
                 handleSubmit(event);
               }
             }}
-            placeholder="Escribe tu pregunta normativa…"
+            placeholder="Type your regulatory question…"
             disabled={isBusy}
             className="min-h-11 resize-none"
           />
           <Button type="submit" disabled={isBusy || input.trim().length === 0}>
-            Enviar
+            Send
           </Button>
         </div>
       </form>

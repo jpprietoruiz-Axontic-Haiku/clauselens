@@ -1,4 +1,4 @@
-# Dependencias
+# Dependencies
 node_modules/
 
 # Env
@@ -28,5 +28,5 @@ coverage/
 # Claude Code local state
 .claude/
 
-# Documento de planificación interno (no forma parte del portfolio público)
+# Internal planning document (not part of the public portfolio)
 /PROYECTO 1_ClauseLens.pdf

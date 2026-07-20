@@ -2,10 +2,10 @@ import { createOpenAiEmbedder, getChatModel, loadCoreEnv, type CoreEnv, type Emb
 import { createDb, loadDbEnv, type Database } from "@clauselens/db";
 import type { LanguageModel } from "ai";
 
-// Singletons perezosos a nivel de módulo: se construyen (y validan sus env
-// vars) en la primera petición que los usa, no al cargar el módulo — así
-// `next build` no falla si faltan claves de API que solo hacen falta en
-// runtime.
+// Lazy module-level singletons: they're built (and validate their env vars)
+// on the first request that uses them, not when the module loads — so
+// `next build` doesn't fail if API keys that are only needed at runtime
+// are missing.
 let dbInstance: Database | undefined;
 let embedderInstance: Embedder | undefined;
 let chatModelInstance: LanguageModel | undefined;

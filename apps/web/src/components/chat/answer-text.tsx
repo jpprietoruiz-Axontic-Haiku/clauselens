@@ -9,10 +9,10 @@ interface AnswerTextProps {
 }
 
 /**
- * Renderiza la respuesta del modelo convirtiendo cada marcador "[n]" (que el
- * propio prompt le pide usar) en un botón clicable hacia el fragmento fuente
- * n-ésimo. Funciona igual de bien a mitad de streaming: en cualquier
- * instante se parte el texto acumulado hasta ese momento.
+ * Renders the model's answer, converting each "[n]" marker (which the
+ * prompt itself asks it to use) into a clickable button to the n-th source
+ * fragment. Works just as well mid-stream: at any point in time, the
+ * accumulated text so far is split.
  */
 export function AnswerText({ text, sources, onCite }: AnswerTextProps) {
   const segments = text.split(CITATION_MARKER_RE);
@@ -28,7 +28,7 @@ export function AnswerText({ text, sources, onCite }: AnswerTextProps) {
         const citationNumber = Number(match[1]);
         const source = sources[citationNumber - 1];
         if (!source) {
-          // El modelo citó un número fuera de rango: se muestra como texto plano.
+          // The model cited an out-of-range number: shown as plain text.
           return <span key={index}>{segment}</span>;
         }
 

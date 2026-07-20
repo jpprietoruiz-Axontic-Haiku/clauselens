@@ -13,7 +13,7 @@ export interface IngestInput {
   jurisdiction: string;
   version: string;
   contentType: ContentType;
-  /** Buffer/Uint8Array para PDF, o el HTML como string. */
+  /** Buffer/Uint8Array for PDF, or the HTML as a string. */
   content: Uint8Array | string;
 }
 
@@ -50,18 +50,18 @@ async function parse(input: IngestInput): Promise<ParsedSection[]> {
 }
 
 /**
- * Parte pura del pipeline (parse -> chunk -> embed): no toca la base de
- * datos, así que se puede testear con un Embedder falso y datos reales.
+ * Pure part of the pipeline (parse -> chunk -> embed): it doesn't touch the
+ * database, so it can be tested with a fake Embedder and real data.
  */
 export async function buildIngestion(embedder: Embedder, input: IngestInput): Promise<BuiltIngestion> {
   const sections = await parse(input);
   if (sections.length === 0) {
-    throw new Error(`No se extrajo texto de "${input.title}"; revisa el formato de origen.`);
+    throw new Error(`No text was extracted from "${input.title}"; check the source format.`);
   }
 
   const documentChunks = chunkSections(sections, DEFAULT_CHUNK_OPTIONS);
   if (documentChunks.length === 0) {
-    throw new Error(`El chunking no produjo fragmentos para "${input.title}".`);
+    throw new Error(`Chunking produced no fragments for "${input.title}".`);
   }
 
   const embeddings = await embedder.embed(documentChunks.map((chunk) => chunk.content));
@@ -69,7 +69,7 @@ export async function buildIngestion(embedder: Embedder, input: IngestInput): Pr
   const chunksWithEmbeddings = documentChunks.map((chunk, index) => {
     const embedding = embeddings[index];
     if (!embedding) {
-      throw new Error(`Falta el embedding del chunk ${index} al ingerir "${input.title}".`);
+      throw new Error(`Missing embedding for chunk ${index} while ingesting "${input.title}".`);
     }
     return { ...chunk, embedding };
   });
@@ -91,7 +91,7 @@ export async function ingestDocument(db: Database, embedder: Embedder, input: In
   return db.transaction(async (tx) => {
     const [document] = await tx.insert(documents).values(built.document).returning({ id: documents.id });
     if (!document) {
-      throw new Error(`No se pudo crear el registro del documento para "${input.title}".`);
+      throw new Error(`Could not create the document record for "${input.title}".`);
     }
 
     await tx.insert(chunksTable).values(

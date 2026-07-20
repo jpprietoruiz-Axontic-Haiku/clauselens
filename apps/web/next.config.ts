@@ -1,9 +1,9 @@
 import { config } from "dotenv";
 import type { NextConfig } from "next";
 
-// Next.js solo autocarga .env desde la raíz de esta app; el monorepo
-// mantiene un único .env en la raíz del repo (ver .env.example). No hace
-// nada en producción (Vercel/Railway inyectan las env vars directamente).
+// Next.js only auto-loads .env from this app's own root; the monorepo
+// keeps a single .env at the repo root (see .env.example). This is a
+// no-op in production (Vercel/Railway inject env vars directly).
 config({ path: "../../.env" });
 
 const nextConfig: NextConfig = {

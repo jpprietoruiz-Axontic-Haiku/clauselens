@@ -7,8 +7,8 @@ const fakeEmbedder: Embedder = {
   embed: (texts: string[]) => Promise.resolve(texts.map(() => [0, 0, 0])),
 };
 
-// Solo se ejercita `transaction`: probar el guardado real requiere Postgres
-// (ver el test de integración de retrieval en el Hito 3).
+// Only `transaction` is exercised: testing the real save requires Postgres
+// (see the retrieval integration test in packages/core).
 const fakeDb = {
   transaction: () => {
     throw new Error("fake-db-not-implemented");
@@ -20,7 +20,7 @@ function buildTestApp() {
 }
 
 describe("healthz", () => {
-  it("responde ok", async () => {
+  it("responds ok", async () => {
     const app = buildTestApp();
     const res = await app.request("/healthz");
     expect(res.status).toBe(200);
@@ -29,7 +29,7 @@ describe("healthz", () => {
 });
 
 describe("POST /api/ingest", () => {
-  it("rechaza un cuerpo inválido con 400", async () => {
+  it("rejects an invalid body with 400", async () => {
     const app = buildTestApp();
     const res = await app.request("/api/ingest", {
       method: "POST",
@@ -39,18 +39,18 @@ describe("POST /api/ingest", () => {
     expect(res.status).toBe(400);
   });
 
-  it("procesa parse+chunk+embed y llega hasta la capa de persistencia", async () => {
+  it("processes parse+chunk+embed and reaches the persistence layer", async () => {
     const app = buildTestApp();
     const res = await app.request("/api/ingest", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        title: "Documento de prueba",
+        title: "Test document",
         sourceUrl: "https://example.org/doc",
         jurisdiction: "EU",
         version: "1.0",
         contentType: "html",
-        content: "<html><body><p>Un párrafo de prueba con contenido suficiente.</p></body></html>",
+        content: "<html><body><p>A test paragraph with enough content.</p></body></html>",
       }),
     });
 

@@ -3,9 +3,9 @@ import { keywordSearch, type KeywordHit } from "./keyword-search.js";
 import type { RetrievedChunk } from "./types.js";
 import { vectorSearch, type VectorHit } from "./vector-search.js";
 
-// Constante estándar de Reciprocal Rank Fusion: amortigua la influencia de
-// las primeras posiciones para que un top-1 en una sola pata no domine por
-// completo sobre coincidencias sólidas en ambas patas.
+// Standard Reciprocal Rank Fusion constant: dampens the influence of top
+// positions so that a top-1 on a single leg doesn't completely dominate
+// over solid matches on both legs.
 const RRF_K = 60;
 const CANDIDATE_POOL_SIZE = 20;
 const DEFAULT_TOP_K = 5;
@@ -32,9 +32,9 @@ function toRetrievedChunk(
 }
 
 /**
- * Combina dos rankings (vector + léxico) vía Reciprocal Rank Fusion. Función
- * pura: no toca la base de datos, así que se puede testear con listas
- * sintéticas sin depender de Postgres.
+ * Combines two rankings (vector + lexical) via Reciprocal Rank Fusion. Pure
+ * function: it doesn't touch the database, so it can be tested with
+ * synthetic lists without depending on Postgres.
  */
 export function fuseRankings(vectorHits: VectorHit[], keywordHits: KeywordHit[], topK: number): RetrievedChunk[] {
   const byId = new Map<string, RetrievedChunk>();

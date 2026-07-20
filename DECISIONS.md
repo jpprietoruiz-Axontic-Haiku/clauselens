@@ -1,171 +1,170 @@
-# Decisiones de arquitectura
+# Architecture decisions
 
-Este documento recoge las decisiones no obvias de ClauseLens y su justificación. No es un
-registro exhaustivo de cada línea de código — es lo que un revisor necesitaría saber para
-entender *por qué* está construido así, no solo *qué* hace.
+This document captures ClauseLens's non-obvious decisions and their justification. It isn't an
+exhaustive record of every line of code — it's what a reviewer would need to know to understand
+*why* it's built this way, not just *what* it does.
 
 ## Retrieval
 
-### Por qué híbrido (vector + léxico) y no solo similitud vectorial
+### Why hybrid (vector + lexical) and not just vector similarity
 
-Los embeddings capturan significado semántico, pero fallan sistemáticamente en dos casos muy
-frecuentes en un asistente normativo:
+Embeddings capture semantic meaning, but they systematically fail in two cases that are very
+common in a regulatory assistant:
 
-- **Términos exactos y referencias legales**: si alguien pregunta literalmente "¿qué dice el
-  artículo 17?", un embedding puede situar esa pregunta cerca de artículos *temáticamente*
-  relacionados con el derecho de supresión sin necesariamente priorizar el chunk que
-  contiene exactamente "Article 17" en su título.
-- **Vocabulario poco frecuente o siglas**: los embeddings generalistas no siempre distinguen
-  bien términos técnicos muy específicos del dominio legal.
+- **Exact terms and legal references**: if someone literally asks "what does article 17 say?",
+  an embedding might place that question near articles *thematically* related to the right to
+  erasure without necessarily prioritizing the chunk that contains exactly "Article 17" in its
+  title.
+- **Rare vocabulary or acronyms**: general-purpose embeddings don't always distinguish highly
+  domain-specific legal terms well.
 
-La búsqueda léxica (`websearch_to_tsquery` sobre un índice GIN de expresión, sin necesidad de
-una columna `tsvector` materializada) cubre exactamente esos casos. Ninguna de las dos patas es
-suficiente por sí sola; por eso se combinan.
+Lexical search (`websearch_to_tsquery` over a GIN expression index, with no need for a
+materialized `tsvector` column) covers exactly these cases. Neither leg is sufficient on its
+own, which is why they're combined.
 
-### Por qué Reciprocal Rank Fusion (RRF) y no normalizar y sumar scores
+### Why Reciprocal Rank Fusion (RRF) instead of normalizing and summing scores
 
-La similitud coseno vive en un rango acotado e interpretable (~[-1, 1], en la práctica cercano a
-[0, 1] con embeddings normalizados). `ts_rank` de Postgres no tiene una escala fija ni
-comparable: dos corpus distintos, o incluso dos consultas distintas sobre el mismo corpus,
-pueden producir rangos de `ts_rank` completamente distintos. Normalizar y sumar esas dos
-magnitudes heterogéneas produciría una fusión arbitraria que depende de detalles de
-implementación de cada motor de búsqueda.
+Cosine similarity lives in a bounded, interpretable range (~[-1, 1], in practice close to [0, 1]
+with normalized embeddings). Postgres's `ts_rank` has no fixed or comparable scale: two
+different corpora, or even two different queries over the same corpus, can produce completely
+different `ts_rank` ranges. Normalizing and summing these two heterogeneous magnitudes would
+produce an arbitrary fusion that depends on implementation details of each search engine.
 
-RRF (`score = Σ 1 / (k + rank)`, con `k = 60`, el valor estándar de la literatura) resuelve esto
-ignorando el valor absoluto de cada score y usando solo la *posición* en cada ranking. Es robusto
-a diferencias de escala entre las dos patas, es determinista, no requiere entrenar ni calibrar
-nada, y es la técnica que la propia comunidad de RAG suele llamar "re-ranking" cuando no se
-introduce un modelo de re-ranking dedicado (ver más abajo).
+RRF (`score = Σ 1 / (k + rank)`, with `k = 60`, the standard value from the literature) solves
+this by ignoring each score's absolute value and using only its *position* in each ranking. It's
+robust to scale differences between the two legs, it's deterministic, it requires no training or
+calibration, and it's the technique the RAG community itself usually calls "re-ranking" when no
+dedicated re-ranking model is introduced (see below).
 
-### Por qué no un re-ranker dedicado (p. ej. Cohere Rerank, cross-encoder)
+### Why not a dedicated re-ranker (e.g. Cohere Rerank, cross-encoder)
 
-Un re-ranker de propósito específico (modelo cross-encoder que puntúa cada par
-pregunta-fragmento) suele dar mejores resultados que RRF puro, pero introduce una llamada de red
-adicional por consulta, una dependencia de proveedor más, y coste adicional — todo ello para un
-corpus semilla de dos documentos donde el margen de mejora es marginal. RRF sobre vector+léxico
-ya cubre los dos modos de fallo relevantes en este alcance. Si el corpus creciera a decenas de
-documentos, un re-ranker dedicado sería la primera pieza a añadir.
+A purpose-built re-ranker (a cross-encoder model that scores each question-fragment pair)
+usually gives better results than plain RRF, but it introduces an extra network call per query,
+one more provider dependency, and added cost — all for a two-document seed corpus where the
+margin of improvement is marginal. RRF over vector+lexical already covers the two relevant
+failure modes at this scope. If the corpus grew to dozens of documents, a dedicated re-ranker
+would be the first piece to add.
 
-### Por qué el umbral de confianza mira la similitud coseno del mejor resultado, y no `fusedScore`
+### Why the confidence threshold looks at the top result's cosine similarity, not `fusedScore`
 
-`fusedScore` es una suma de contribuciones de RRF: su magnitud depende de en cuántas patas
-apareció un chunk y en qué posición, no de "cuán relacionado semánticamente está con la
-pregunta". No tiene una interpretación absoluta — no existe un "0.5 de fusedScore" que
-signifique lo mismo entre dos consultas distintas.
+`fusedScore` is a sum of RRF contributions: its magnitude depends on how many legs a chunk
+appeared on and at what position, not on "how semantically related it is to the question". It
+has no absolute interpretation — there's no "0.5 fusedScore" that means the same thing across
+two different queries.
 
-La similitud coseno del mejor resultado *sí* es interpretable: 1 es idéntico, valores bajos o
-negativos indican que ni siquiera el mejor candidato está semánticamente cerca de la pregunta.
-Por eso el umbral (`CONFIDENCE_THRESHOLD = 0.35`, `packages/core/src/retrieval/confidence.ts`)
-se aplica ahí. Es un valor conservador elegido por inspección manual con `text-embedding-3-large`
-sobre el corpus semilla, no calibrado estadísticamente contra un conjunto de validación grande
-— con un corpus de solo dos documentos, calibrar un umbral "óptimo" sería sobreajustar a ruido.
-Si el corpus creciera, este valor debería revisarse con un conjunto de preguntas negativas más
-amplio que las dos incluidas en el golden set actual.
+The top result's cosine similarity *is* interpretable: 1 is identical, low or negative values
+mean not even the best candidate is semantically close to the question. That's why the threshold
+(`CONFIDENCE_THRESHOLD = 0.35`, `packages/core/src/retrieval/confidence.ts`) is applied there.
+It's a conservative value chosen by manual inspection with `text-embedding-3-large` over the
+seed corpus, not statistically calibrated against a large validation set — with a corpus of only
+two documents, calibrating an "optimal" threshold would mean overfitting to noise. If the corpus
+grew, this value should be revisited with a broader set of negative questions than the two
+included in the current golden set.
 
-Cuando no se supera el umbral, el sistema **no llama al LLM en absoluto**: responde con un
-mensaje fijo. Esto evita tanto la alucinación como el coste de una llamada que casi con
-seguridad produciría una respuesta sin fundamento real.
+When the threshold isn't met, the system **doesn't call the LLM at all**: it answers with a
+fixed message. This avoids both hallucination and the cost of a call that would almost certainly
+produce an answer with no real grounding.
 
-## Esquema de datos y almacenamiento
+## Data schema and storage
 
-### Por qué Postgres + pgvector y no una base de datos vectorial dedicada
+### Why Postgres + pgvector and not a dedicated vector database
 
-Un único Postgres aloja el vector search (pgvector, índice HNSW), la búsqueda de texto completo
-(índice GIN nativo) y los datos relacionales (documentos, conversaciones, resultados de eval) en
-las mismas transacciones. Para el volumen de este proyecto (un corpus semilla de dos documentos,
-unos pocos cientos de chunks), una base de datos vectorial dedicada (Pinecone, Weaviate...)
-añadiría una pieza de infraestructura más, otro proveedor que gestionar y sincronizar, sin
-ninguna ventaja de rendimiento apreciable a esta escala. Neon (Postgres serverless con pgvector
-nativo) permite desplegar esto con cero infraestructura propia que mantener.
+A single Postgres hosts vector search (pgvector, HNSW index), full-text search (native GIN
+index) and relational data (documents, conversations, eval results) in the same transactions.
+For this project's volume (a two-document seed corpus, a few hundred chunks), a dedicated vector
+database (Pinecone, Weaviate...) would add one more piece of infrastructure, another provider to
+manage and sync, with no appreciable performance advantage at this scale. Neon (serverless
+Postgres with native pgvector) lets this be deployed with zero self-managed infrastructure.
 
-### Por qué Drizzle ORM
+### Why Drizzle ORM
 
-Tipado end-to-end desde el schema de TypeScript hasta las consultas SQL, sin generar un cliente
-aparte (a diferencia de Prisma) ni perder la capacidad de escribir SQL crudo cuando hace falta
-(la fusión de rankings y la expresión GIN de full-text search se apoyan en `sql\`...\`` de
-Drizzle). Las migraciones son SQL plano versionado y legible, no una capa de abstracción opaca.
+End-to-end typing from the TypeScript schema through to SQL queries, without generating a
+separate client (unlike Prisma) and without losing the ability to write raw SQL when needed
+(rank fusion and the full-text search GIN expression rely on Drizzle's `sql\`...\``).
+Migrations are plain, versioned, readable SQL, not an opaque abstraction layer.
 
-### Por qué `chunks.embedding` está fijado a 3072 dimensiones
+### Why `chunks.embedding` is fixed to 3072 dimensions
 
-`text-embedding-3-large` de OpenAI produce vectores de 3072 dimensiones. Es una decisión con
-coste real de cambiar: la columna del schema, el índice HNSW y todo el corpus ya ingerido
-dependen de esa dimensión exacta. Cambiar de modelo de embeddings implica una migración y
-reingesta completas, no solo cambiar una variable de entorno — está documentado como tal en
-`.env.example` y en el propio schema.
+OpenAI's `text-embedding-3-large` produces 3072-dimension vectors. This is a decision with a
+real cost to change: the schema column, the HNSW index, and the entire already-ingested corpus
+depend on that exact dimension. Switching embedding models means a full migration and
+re-ingestion, not just changing an environment variable — documented as such in `.env.example`
+and in the schema itself.
 
-## Generación y proveedor de LLM
+## Generation and LLM provider
 
-### Por qué una capa de proveedor intercambiable (Anthropic / OpenAI)
+### Why a swappable provider layer (Anthropic / OpenAI)
 
-El Vercel AI SDK unifica la interfaz de `streamText`/`generateText` entre proveedores: cambiar
-de modelo es una variable de entorno (`LLM_PROVIDER`), no un cambio de código
-(`packages/core/src/llm/provider.ts`). Esto demuestra una capacidad real de producción (no
-depender de un único proveedor) y facilita comparar coste/calidad entre modelos sin tocar la
-lógica de negocio.
+The Vercel AI SDK unifies the `streamText`/`generateText` interface across providers: switching
+models is an environment variable (`LLM_PROVIDER`), not a code change
+(`packages/core/src/llm/provider.ts`). This demonstrates a real production capability (not
+depending on a single provider) and makes it easy to compare cost/quality across models without
+touching business logic.
 
-### Por qué los embeddings están fijos a OpenAI incluso cuando `LLM_PROVIDER=anthropic`
+### Why embeddings are fixed to OpenAI even when `LLM_PROVIDER=anthropic`
 
-Anthropic no ofrece una API de embeddings. La capa de proveedor intercambiable cubre el modelo de
-*chat*; los embeddings son una dependencia aparte y deliberadamente no intercambiable, documentada
-como tal (`OPENAI_API_KEY` es obligatorio con independencia del proveedor de chat elegido).
+Anthropic doesn't offer an embeddings API. The swappable provider layer covers the *chat* model;
+embeddings are a separate, deliberately non-swappable dependency, documented as such
+(`OPENAI_API_KEY` is required regardless of the chosen chat provider).
 
-## Harness de evaluación
+## Evaluation harness
 
-### Por qué estas tres métricas (faithfulness, answer relevancy, context precision)
+### Why these three metrics (faithfulness, answer relevancy, context precision)
 
-Cada una aísla un modo de fallo distinto de un sistema RAG, y juntas cubren el pipeline completo:
+Each isolates a different failure mode of a RAG system, and together they cover the whole
+pipeline:
 
-- **Faithfulness** — ¿el paso de *generación* inventó algo que no está en el contexto? Es la
-  métrica anti-alucinación por excelencia.
-- **Answer relevancy** — ¿el paso de generación, aun siendo fiel al contexto, respondió
-  realmente lo que se preguntó? Una respuesta puede ser 100% fiel al contexto y aun así ser
-  evasiva o tangencial.
-- **Context precision** — ¿el paso de *retrieval* recuperó los fragmentos correctos? Si esta
-  métrica es baja, el problema está antes de llegar al LLM, y ni faithfulness ni answer
-  relevancy lo van a revelar por sí solas.
+- **Faithfulness** — did the *generation* step make up something that isn't in the context?
+  This is the anti-hallucination metric par excellence.
+- **Answer relevancy** — even if faithful to the context, did the generation step actually
+  answer what was asked? An answer can be 100% faithful to the context and still be evasive or
+  tangential.
+- **Context precision** — did the *retrieval* step fetch the correct fragments? If this metric
+  is low, the problem is upstream of the LLM, and neither faithfulness nor answer relevancy will
+  reveal it on their own.
 
-Este es el mismo desglose que populariza RAGAS, sin adoptar la librería completa: aquí el
-harness es propio y deliberadamente pequeño.
+This is the same breakdown popularized by RAGAS, without adopting the full library: the harness
+here is custom and deliberately small.
 
-### Por qué LLM-as-judge para dos métricas y heurística para la tercera
+### Why LLM-as-judge for two metrics and a heuristic for the third
 
-Determinar si una afirmación en lenguaje natural está "respaldada por el contexto" o si una
-respuesta "aborda la pregunta" requiere comprensión semántica — no hay una heurística barata que
-lo haga bien, así que faithfulness y answer relevancy usan un juez LLM
-(`generateText` + `Output.object` con un schema de Zod para forzar una salida estructurada
-`{ score, reasoning }`).
+Determining whether a natural-language claim is "backed by the context", or whether an answer
+"addresses the question", requires semantic understanding — there's no cheap heuristic that does
+this well, so faithfulness and answer relevancy use an LLM judge (`generateText` +
+`Output.object` with a Zod schema to force a structured `{ score, reasoning }` output).
 
-Context precision, en cambio, se puede calcular de forma determinista y gratuita comparando el
-número de artículo de cada chunk recuperado contra los artículos que el golden set espera
-(`packages/core/src/eval/context-precision.ts`). Usar un LLM ahí sería más caro y más lento sin
-aportar más señal, dado que el golden set ya anota la respuesta correcta.
+Context precision, on the other hand, can be computed deterministically and for free by
+comparing each retrieved chunk's article number against the articles the golden set expects
+(`packages/core/src/eval/context-precision.ts`). Using an LLM there would be slower and more
+expensive without adding signal, since the golden set already annotates the correct answer.
 
-### Por qué el juez usa el mismo modelo que genera las respuestas
+### Why the judge uses the same model that generates the answers
 
-Simplicidad y coste: un único proveedor configurado basta para correr el harness completo. La
-desventaja conocida es el sesgo de "el modelo se juzga a sí mismo" (tiende a puntuarse mejor de
-lo que un juez independiente lo haría). `RunEvalDeps.judgeModel` está separado de `chatModel`
-precisamente para que apuntar el juez a un proveedor distinto sea un cambio de una línea, no un
-rediseño, el día que se quiera eliminar ese sesgo.
+Simplicity and cost: a single configured provider is enough to run the whole harness. The known
+downside is the "the model judges itself" bias (it tends to score itself better than an
+independent judge would). `RunEvalDeps.judgeModel` is kept separate from `chatModel` precisely
+so that pointing the judge at a different provider is a one-line change, not a redesign, the day
+that bias needs to be removed.
 
-### Por qué el golden set incluye preguntas deliberadamente fuera de corpus
+### Why the golden set includes questions deliberately outside the corpus
 
-Dos de las diez preguntas del golden set no tienen respuesta en el corpus (GDPR + EU AI Act) a
-propósito. Sin ellas, el harness solo mediría "¿responde bien cuando hay contexto?" y nunca
-"¿sabe decir que no sabe?" — que es precisamente la propiedad que distingue a este sistema de un
-RAG que alucina con confianza. `context-precision.ts` trata estos casos correctamente: cualquier
-chunk recuperado para una pregunta sin artículos esperados cuenta como "no relevante", así que un
-retrieval que devuelve ruido para una pregunta sin respuesta también se penaliza.
+Two of the golden set's ten questions have no answer in the corpus (GDPR + EU AI Act) on
+purpose. Without them, the harness would only measure "does it answer well when there's
+context?" and never "does it know when it doesn't know?" — which is precisely the property that
+distinguishes this system from a RAG that hallucinates with confidence. `context-precision.ts`
+handles these cases correctly: any chunk retrieved for a question with no expected articles
+counts as "not relevant", so a retrieval that returns noise for an unanswerable question is
+penalized too.
 
-## Qué se dejó fuera del alcance (y por qué)
+## What was left out of scope (and why)
 
-- **Autenticación y multi-tenancy**: el corpus es 100% público y el objetivo es demostrar el
-  pipeline RAG, no un producto multiusuario.
-- **Re-ranker dedicado**: ver más arriba — RRF cubre el alcance actual sin coste ni dependencia
-  extra.
-- **Streaming de citas verificadas en tiempo real** (validar cada marcador `[n]` contra el
-  contexto mientras se genera, no solo al final): añadiría latencia por token a cambio de una
-  garantía que el faithfulness del harness de eval ya mide de forma agregada.
-- **Corpus más allá de GDPR y EU AI Act**: el objetivo del corpus semilla es demostrar el
-  pipeline completo (parse HTML + parse PDF, ambos ejercitados) con datos reales, no maximizar
-  cobertura normativa.
+- **Authentication and multi-tenancy**: the corpus is 100% public and the goal is to demonstrate
+  the RAG pipeline, not a multi-user product.
+- **Dedicated re-ranker**: see above — RRF covers the current scope with no extra cost or
+  dependency.
+- **Real-time verified citation streaming** (validating each `[n]` marker against the context as
+  it's generated, not only at the end): would add per-token latency in exchange for a guarantee
+  the eval harness's faithfulness metric already measures in aggregate.
+- **Corpus beyond GDPR and the EU AI Act**: the seed corpus's goal is to demonstrate the full
+  pipeline (both HTML parsing and PDF parsing exercised) with real data, not to maximize
+  regulatory coverage.

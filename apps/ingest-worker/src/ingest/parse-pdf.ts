@@ -3,11 +3,11 @@ import { isArticleHeading } from "./article-heading.js";
 import type { ParsedSection } from "./types.js";
 
 export async function parsePdf(buffer: Uint8Array): Promise<ParsedSection[]> {
-  // unpdf reexporta los tipos de pdfjs-dist (orientados a navegador, p.ej.
-  // referencian OffscreenCanvas); nuestro tsconfig es Node puro sin "dom" en
-  // `lib`, así que TS no puede resolver del todo el tipo de PDFDocumentProxy
-  // y ESLint lo ve como "error typed". `tsc --noEmit` no reporta nada real
-  // aquí: es un choque de `lib`, no un `any` en este código.
+  // unpdf re-exports pdfjs-dist's types (browser-oriented, e.g. they
+  // reference OffscreenCanvas); our tsconfig is Node-only without "dom" in
+  // `lib`, so TS can't fully resolve PDFDocumentProxy's type and ESLint
+  // sees it as "error typed". `tsc --noEmit` reports nothing real here:
+  // it's a `lib` mismatch, not an `any` in this code.
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const pdf = await getDocumentProxy(buffer);
   const { text: pages } = await extractText(pdf, { mergePages: false });

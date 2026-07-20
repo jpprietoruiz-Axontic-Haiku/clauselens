@@ -18,12 +18,12 @@ interface SeedDocument {
   file: string;
 }
 
-// Corpus semilla: extractos públicos reales de EUR-Lex (GDPR en HTML, EU AI
-// Act en PDF) para que la demo tenga sustancia desde el día 1 y para
-// ejercitar los dos parsers del pipeline.
+// Seed corpus: real public excerpts from EUR-Lex (GDPR in HTML, EU AI Act in
+// PDF) so the demo has substance from day one, and to exercise both
+// parsers in the pipeline.
 const SEED_DOCUMENTS: SeedDocument[] = [
   {
-    title: "Reglamento General de Protección de Datos (GDPR) — Reglamento (UE) 2016/679",
+    title: "General Data Protection Regulation (GDPR) — Regulation (EU) 2016/679",
     sourceUrl: "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32016R0679",
     jurisdiction: "EU",
     version: "2016/679",
@@ -31,7 +31,7 @@ const SEED_DOCUMENTS: SeedDocument[] = [
     file: "gdpr.html",
   },
   {
-    title: "Reglamento de Inteligencia Artificial (EU AI Act) — Reglamento (UE) 2024/1689",
+    title: "Artificial Intelligence Act (EU AI Act) — Regulation (EU) 2024/1689",
     sourceUrl: "https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=OJ:L_202401689",
     jurisdiction: "EU",
     version: "2024/1689",
