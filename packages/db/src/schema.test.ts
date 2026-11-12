@@ -20,11 +20,12 @@ describe("schema", () => {
     );
   });
 
-  it("chunks has an HNSW index on embedding", () => {
+  it("does not declare an unsupported HNSW index on vector(3072)", () => {
     const { indexes } = getTableConfig(chunks);
-    const embeddingIndex = indexes.find((idx) => idx.config.name === "chunks_embedding_idx");
-    expect(embeddingIndex).toBeDefined();
-    expect(embeddingIndex?.config.method).toBe("hnsw");
+    const unsupportedIndex = indexes.find((idx) => idx.config.name === "chunks_embedding_idx");
+    // pgvector supports up to 2,000 dimensions for an HNSW vector index;
+    // the 3,072D embeddings remain searchable by an exact cosine scan.
+    expect(unsupportedIndex).toBeUndefined();
   });
 
   it("eval_results references eval_runs", () => {
