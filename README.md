@@ -1,5 +1,7 @@
 # ClauseLens
 
+> **Hiring manager / technical reviewer?** Start with the [2-minute technical overview](REVIEWER_GUIDE.md) for evidence, code pointers and limitations.
+
 > A production-grade regulatory RAG assistant. Ask a natural-language question about a
 > regulatory corpus (GDPR, EU AI Act) and get an answer anchored to the exact clauses that
 > support it — with an evaluation dashboard that proves, with metrics, that it doesn't hallucinate.
